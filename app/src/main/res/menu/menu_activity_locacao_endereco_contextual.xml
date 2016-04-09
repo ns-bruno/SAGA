@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/menu_activity_locacao_endereco_contextual_excluir_produto_locacao"
+        android:orderInCategory="102"
+        android:icon="@mipmap/ic_delete"
+        android:title="@string/excluir_produto_endereco"
+        app:showAsAction="always" />
+
+</menu>

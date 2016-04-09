@@ -1,0 +1,99 @@
+<resources>
+    <string name="app_name">SAGA</string>
+    <string name="sincronizar">Sincronizar</string>
+    <string name="senha">Senha</string>
+    <string name="usuario">Usuário</string>
+    <string name="entrar">Entrar</string>
+    <string name="sistema_auxiliar_gerenciamento_armazem">Sistema Auxiliar de Gerenciamento de Armazem</string>
+    <string name="cadastro_com_sucesso">Cadastrado com Sucesso.</string>
+    <string name="nao_foi_possivel_cadastrar">Não foi Possível Cadastrar.</string>
+    <string name="erro_sqlite_code_2067">Já existe no banco de dados.</string>
+    <string name="erro_sqlite_code_1811">Abortamos a operação. Confira os detalhes da mensagem.</string>
+    <string name="erro_sqlite_code_1299">Existe campos que são obrigatórios. Verifique quais.</string>
+    <string name="nao_existe_tabela_banco_dados">Não existe está tabela no banco de dados.</string>
+    <string name="vamos_executar_processo_criar_tabelas">Vamos executar o processo para tentar criar as tabelas que falta.</string>
+    <string name="configuracoes_iniciais">Configurações Iniciais</string>
+    <string name="usuario_desconhecido">Usuário Desconhecido</string>
+    <string name="romaneio">Romaneio</string>
+    <string name="produtos">Produtos</string>
+    <string name="pedido">Pedido</string>
+    <string name="orcamento">Orçamento</string>
+    <string name="entrada">Entrada</string>
+    <string name="separar">Separar</string>
+    <string name="locacao_produto">Locação Por Produto</string>
+    <string name="locacao_endereco">Locação Por Endereço</string>
+    <string name="monitoramento">Monitoramento</string>
+    <string name="enviar_automatico">Enviar Automatico</string>
+    <string name="receber_automatico">Receber Automatico</string>
+    <string name="digitar_quantidade">Digitar Quantidade</string>
+    <string name="clique_sair_novamente_para_sair">Clique novamente em voltar para sair</string>
+    <string name="fechar">Fechar</string>
+    <string name="enviar">Enviar</string>
+    <string name="nao_foi_possivel_atualizar">Não foi possível atualizar</string>
+    <string name="descricao">Descrição</string>
+    <string name="codigo">Código</string>
+    <string name="unitario">Unitário</string>
+    <string name="unidade">Unidade</string>
+    <string name="referencia">Referência</string>
+    <string name="estoque">Estoque</string>
+    <string name="nenhum_valor_encontrado">Nenhum valor encontrado.</string>
+    <string name="nota_fiscal_entrada">Nota Fiscal de Entrada</string>
+    <string name="pesquisar">Pesquisar</string>
+    <string name="limpar_historico">Limpar Histórico</string>
+    <string name="nao_encontramos_nenhuma_nota_fiscal_entrada">Não encontramos nenhuma nota fiscal de entrada.</string>
+    <string name="itens_nota_fiscal_entrada">Itens N.F. de Entrada</string>
+    <string name="modulo">Módulo</string>
+    <string name="casas_decimais">Casas Decimais</string>
+    <string name="codigo_barras">Código de Barras</string>
+    <string name="salvar">Salvar</string>
+    <string name="nao_achamos_descricao">Não achamos a descrição.</string>
+    <string name="ativo">Ativo</string>
+    <string name="comunicando_servidor">Comunicando com o servidor.</string>
+    <string name="conectando_servidor">Conectando com o servidor. Aguarde...</string>
+    <string name="servidor_offline_por_isso_nao_conseguimos_conectar">O servidor Webservice está offline. Por isso não conseguimos conectar.</string>
+    <string name="demorou_demais_servidor_webservice_responter_internet_lenta">Demorou demais para o servidor Webservice responder.
+                                                                      Talvez a internet esteja lenta, sujerimos que tente novamente ou entre em contanto com o departamento de T.I.</string>
+    <string name="status">Status</string>
+    <string name="estamos_empacotando_dados_ser_enviados_servidor">Estamos empacotando os dados a ser enviados para o servidor Webservice.</string>
+    <string name="espere_mais_pouco_vamos_conectar_servidor">Espere mais um pouco que vamos conectar com o servidor Webservice.</string>
+    <string name="enviando_dados_servidor_webservice">Enviamos os dados para o servidor Webservice, estamos esperando o retorno dele.</string>
+    <string name="nao_consegimos_carregar_imagem_produtos">Não conseguimos carregar a imagem do produto.</string>
+    <string name="ip_servidor">IP Servidor</string>
+    <string name="ip_servidor_webservice">IP Servidor Webservice</string>
+    <string name="porta_servidor">Porta Servidor</string>
+    <string name="caminho_banco_dados">Caminho do Banco de Dados</string>
+    <string name="usuario_servidor">Usuário Servidor</string>
+    <string name="senha_usuario_servidor">Senha do Usuário Servidor</string>
+    <string name="certificado">Certificado</string>
+    <string name="conexao_interna">Conexão Interna</string>
+    <string name="conexao_webservice">Conexão por Webservice</string>
+    <string name="conexao_ftp">Conexão por FTP</string>
+    <string name="tamanho_texto">Tamanho Texto</string>
+    <string name="configuracoes">Configurações</string>
+    <string name="nao_conseguimos_salvar_configuracoes">Não conseguimos salvar as configurações.</string>
+    <string name="nao_conseguimos_pegar_configuracoes">Não conseguimos pegar as configurações.</string>
+    <string name="ja_estamos_com_retorno_servidor">Já estamos com o retorno do servidor. Vamos processar pra você.</string>
+    <string name="limite_dias_conferir">Limite Dias Conferir</string>
+    <string name="codigo_empresa">Código da Empresa</string>
+    <string name="pesquisar_produto">Pesquisar Produto</string>
+    <string name="locacao_reserva">Locação Reserva/Estoque</string>
+    <string name="locacao_ativa">Locação Ativa/Principal</string>
+    <string name="atualizado_sucesso">Atualizado com Sucesso!</string>
+    <string name="nao_conseguimos_atualizar_locacao">Não conseguimos atualizar atualizar a locação.</string>
+    <string name="tipo_locacao">Tipo de Locação</string>
+    <string name="pesquisar_locacao">Pesquisar Locação</string>
+    <string name="favor_escolha_qual_tipo_dessa_locacao">Por favor, escolha qual é o TIPO desse ENDEREÇO (LOCAÇÃO).</string>
+    <string name="produto_inserido_endereco_com_sucesso">Produto inserido no endereço com sucesso!</string>
+    <string name="nao_conseguimos_inserir_produto_inserido_endereco_com_sucesso">Não conseguimos inserir o produto no endereço com sucesso!</string>
+    <string name="excluir_produto_endereco">Excluir Produto do Endereço</string>
+
+    <string-array name="tab_nota_fiscal_entrada">
+        <item>Conferir Entradas</item>
+        <item>Já Conferidos</item>
+    </string-array>
+
+    <string-array name="tab_item_nota_fiscal_entrada">
+        <item>Conferir Itens</item>
+        <item>Já Conferidos</item>
+    </string-array>
+</resources>

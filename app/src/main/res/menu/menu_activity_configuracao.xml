@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/menu_activity_configuracao_salvar"
+        android:orderInCategory="101"
+        android:icon="@mipmap/ic_content_save"
+        android:title="@string/salvar"
+        app:showAsAction="always" />
+
+    <item
+        android:id="@+id/menu_activity_configuracao_fechar"
+        android:orderInCategory="102"
+        android:icon="@mipmap/ic_close"
+        android:title="@string/fechar"
+        app:showAsAction="always" />
+
+</menu>

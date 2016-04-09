@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="5dp">
+
+    <de.hdodenhof.circleimageview.CircleImageView
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/layout_item_universal_profile_image"
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        android:src="@mipmap/ic_launcher"
+        app:civ_border_width="2dp"
+        app:civ_border_color="@color/branco"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/layout_item_universal_text_descricao"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@+id/layout_item_universal_view_topo"
+        android:text="@string/descricao"
+        android:layout_toLeftOf="@+id/layout_item_universal_imageView_opcao"
+        android:layout_toEndOf="@+id/layout_item_universal_view_topo"
+        android:layout_toRightOf="@+id/layout_item_universal_view_topo"
+        android:layout_marginLeft="2dp"
+        android:textColor="@color/preto" />
+
+    <TextView
+        android:id="@+id/layout_item_universal_text_abaixo_descricao_esquerda"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/layout_item_universal_text_descricao"
+        android:layout_below="@+id/layout_item_universal_text_descricao"
+        android:layout_marginTop="5dp"
+        android:text="@string/codigo"
+        android:textColor="@color/preto" />
+
+    <TextView
+        android:id="@+id/layout_item_universal_text_botton_esquerdo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/layout_item_universal_text_abaixo_descricao_esquerda"
+        android:layout_below="@+id/layout_item_universal_text_abaixo_descricao_esquerda"
+        android:layout_marginTop="5dp"
+        android:text="@string/unitario"
+        android:gravity="right"
+        android:textColor="@color/preto" />
+
+    <TextView
+        android:id="@+id/layout_item_universal_text_botton_esquerdo_dois"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/layout_item_universal_text_botton_esquerdo"
+        android:layout_alignBottom="@+id/layout_item_universal_text_botton_esquerdo"
+        android:layout_toRightOf="@+id/layout_item_universal_text_botton_esquerdo"
+        android:text="@string/unidade"
+        android:layout_marginLeft="5dp"
+        android:gravity="left"
+        android:textColor="@color/preto"
+        android:ellipsize="end"
+        android:singleLine="true"
+        android:maxLength="18"/>
+
+    <View
+        android:id="@+id/layout_item_universal_view_rodape"
+        android:layout_width="5dp"
+        android:layout_height="25dp"
+        android:background="@color/azul_escuro"
+        android:layout_alignBottom="@+id/layout_item_universal_text_botton_esquerdo"
+        android:layout_toRightOf="@+id/layout_item_universal_profile_image"
+        android:layout_toEndOf="@+id/layout_item_universal_profile_image" />
+
+    <View
+        android:id="@+id/layout_item_universal_view_topo"
+        android:layout_width="5dp"
+        android:layout_height="25dp"
+        android:background="@color/azul_escuro"
+        android:layout_alignParentTop="true"
+        android:layout_toRightOf="@+id/layout_item_universal_profile_image"
+        android:layout_toEndOf="@+id/layout_item_universal_profile_image" />
+
+    <TextView
+        android:id="@+id/layout_item_universal_text_abaixo_descricao_direita"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/layout_item_universal_text_botton_esquerdo"
+        android:layout_alignParentRight="true"
+        android:gravity="right"
+        android:text="@string/referencia"
+        android:textColor="@color/preto" />
+
+    <TextView
+        android:id="@+id/layout_item_universal_text_botton_direito"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="right"
+        android:text="@string/estoque"
+        android:layout_alignTop="@+id/layout_item_universal_text_botton_esquerdo_dois"
+        android:layout_toRightOf="@+id/layout_item_universal_text_botton_esquerdo_dois"
+        android:layout_alignParentRight="true"
+        android:textColor="@color/preto" />
+
+    <ImageView
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:id="@+id/layout_item_universal_imageView_opcao"
+        android:layout_alignParentRight="true"
+        android:background="@mipmap/ic_information_outline_light"
+        android:visibility="gone"
+        android:adjustViewBounds="true"
+        android:scaleType="fitCenter"
+        android:layout_alignTop="@+id/layout_item_universal_text_descricao" />
+
+</RelativeLayout>
