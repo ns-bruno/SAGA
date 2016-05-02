@@ -122,20 +122,51 @@
             android:id="@+id/activity_locacao_produto_spinner_estoque"
             android:layout_marginTop="10dp" />
 
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp" >
+
         <EditText
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/activity_locacao_produto_editText_locacao_ativa"
             android:layout_gravity="center_horizontal"
             android:layout_marginTop="10dp"
-            android:hint="@string/locacao_ativa"/>
+            android:hint="@string/locacao_ativa"
+            android:layout_weight="1"/>
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/activity_locacao_produto_button_escanear_codigo_barra_locacao_ativa"
+            android:layout_weight="5"
+            android:background="@mipmap/ic_barcode_scan_light" />
+
+        </LinearLayout>
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="30dp" >
 
         <EditText
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/activity_locacao_produto_editText_locacao_passiva"
             android:layout_marginTop="10dp"
-            android:hint="@string/locacao_reserva"/>
+            android:hint="@string/locacao_reserva"
+            android:layout_weight="1"/>
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/activity_locacao_produto_button_escanear_codigo_barra_locacao_reserva"
+            android:layout_weight="5"
+            android:background="@mipmap/ic_barcode_scan_light" />
+
+        </LinearLayout>
 
     </LinearLayout>
     
@@ -160,14 +191,29 @@
             android:paddingLeft="10dp"
             android:paddingRight="10dp" >
 
-            <EditText
+            <LinearLayout
+                android:orientation="horizontal"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:id="@+id/activity_locacao_produto_editText_pesquisar"
-                android:hint="@string/pesquisar_produto"
-                android:inputType="textCapCharacters" >
-                <requestFocus/>
-            </EditText>
+                android:layout_height="wrap_content" >
+
+                <EditText
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:id="@+id/activity_locacao_produto_editText_pesquisar"
+                    android:hint="@string/pesquisar_produto"
+                    android:inputType="textCapCharacters"
+                    android:layout_weight="1">
+                    <requestFocus/>
+                </EditText>
+
+                <Button
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:id="@+id/activity_locacao_produto_button_escanear_codigo_barra_produto"
+                    android:layout_weight="5"
+                    android:background="@mipmap/ic_barcode_scan" />
+
+            </LinearLayout>
 
             </android.support.v7.widget.Toolbar>
 

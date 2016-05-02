@@ -15,6 +15,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -32,6 +33,9 @@ import com.saga.funcoes.rotinas.EstoqueRotinas;
 import com.saga.funcoes.rotinas.ProdutoRotinas;
 
 import java.util.List;
+
+import me.sudar.zxingorient.ZxingOrient;
+import me.sudar.zxingorient.ZxingOrientResult;
 
 /**
  * Created by Faturamento on 30/03/2016.
@@ -54,8 +58,11 @@ public class LocacaoProdutoActivity extends AppCompatActivity {
     private Toolbar toolbarCabecalho;
     private LinearLayout linearLayoutPrincipal;
     private ItemUniversalAdapter adapterEstoque;
+    private Button buttonEscanearCodigoBarraProduto, buttonEscanearCodigoBarraLocacaoAtiva, buttonEscanearCodigoBarraLocacaoReserva;
     public static final int REQUISICAO_DADOS_PRODUTOS = 100,
                             PRODUTO_RETORNADO_SUCESSO = 200;
+    private final String CAMPO_LOCACAO_ATIVA = "CAMPO_LOCACAO_ATIVA", CAMPO_LOCACAO_RESERVA = "CAMPO_LOCACAO_RESERVA", CAMPO_PRODUTO = "CAMPO_PRODUTO";
+    private String campoQueChamouLeitor = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,74 +78,7 @@ public class LocacaoProdutoActivity extends AppCompatActivity {
                 if (keyCode == KeyEvent.KEYCODE_ENTER && event.getAction() == KeyEvent.ACTION_DOWN) {
                     Log.d("SAGA", "enter_key_called - LocacaoProdutoActivity");
 
-                    // Checa se tem alguma coisa digitada no campos
-                    if (editTextPesquisar.getText().length() > 0) {
-
-                        String whereProduto = "";
-                        String textoPesquisa = editTextPesquisar.getText().toString().replace(" ", "%");
-                        Intent intent = new Intent(LocacaoProdutoActivity.this, ListaProdutoActivity.class);
-
-                        // Checa se eh uma letra
-                        if (Character.isLetter(editTextPesquisar.getText().charAt(1))) {
-
-                            whereProduto += "(AEAPRODU.DESCRICAO LIKE '%" + textoPesquisa + "%') OR (AEAMARCA.DESCRICAO LIKE '%" + textoPesquisa + "%' ) OR " +
-                                            "(AEAPRODU.REFERENCIA LIKE '%" + textoPesquisa + "%') OR ((SELECT COUNT(*) FROM AEAEMBAL " +
-                                            "WHERE (AEAEMBAL.ID_AEAPRODU = AEAPRODU.ID_AEAPRODU) AND (AEAEMBAL.REFERENCIA LIKE '%" + textoPesquisa + "%')) > 0)";
-
-                            // Checo se eh um codigo interno ou estrutural
-                        } else if (editTextPesquisar.getText().toString().length() < 8) {
-
-                            boolean apenasNumeros = true;
-
-                            for (char digito : editTextPesquisar.getText().toString().toCharArray()) {
-                                // Checa se eh um numero
-                                if (!Character.isDigit(digito)) {
-                                    apenasNumeros = false;
-                                }
-                            }
-                            if (apenasNumeros) {
-
-                                whereProduto += "(AEAPRODU.CODIGO = " + editTextPesquisar.getText().toString() + ") OR (AEAPRODU.CODIGO_ESTRUTURAL = '" + editTextPesquisar.getText().toString() + "') " +
-                                                "OR (AEAPRODU.REFERENCIA = '" + editTextPesquisar.getText().toString() + "') ";
-
-                            } else {
-                                whereProduto += "(AEAPRODU.DESCRICAO LIKE '%" + textoPesquisa + "%') OR (AEAMARCA.DESCRICAO LIKE '%" + textoPesquisa + "%' ) OR " +
-                                        "(AEAPRODU.REFERENCIA LIKE '%" + textoPesquisa + "%')";
-                            }
-
-                        } else if (editTextPesquisar.getText().toString().length() >= 8) {
-                            boolean apenasNumeros = true;
-
-                            for (char digito : editTextPesquisar.getText().toString().toCharArray()) {
-                                // Checa se eh um numero
-                                if (!Character.isDigit(digito)) {
-                                    apenasNumeros = false;
-                                }
-                            }
-                            if (apenasNumeros) {
-                                whereProduto += "(AEAPRODU.CODIGO_BARRAS = '" + editTextPesquisar.getText().toString() + "') OR (AEAPRODU.REFERENCIA = '" + editTextPesquisar.getText().toString() + "') " +
-                                        "OR ((SELECT COUNT(*) FROM AEAEMBAL " +
-                                        "WHERE (AEAEMBAL.ID_AEAPRODU = AEAPRODU.ID_AEAPRODU) AND (AEAEMBAL.CODIGO_BARRAS = '" + editTextPesquisar.getText().toString() + "')) > 0) ";
-                                //"OR (AEAEMBAL.CODIGO_BARRAS = '" + editTextPesquisar.getText().toString() + "')";
-                            }
-
-                        } else {
-                            whereProduto += "(AEAPRODU.DESCRICAO LIKE '%" + textoPesquisa + "%') OR (AEAMARCA.DESCRICAO LIKE '%" + textoPesquisa + "%' ) OR " +
-                                    "(AEAPRODU.REFERENCIA LIKE '%" + textoPesquisa + "%') OR " +
-                                    "((SELECT COUNT(*) FROM AEAEMBAL \n" +
-                                    "WHERE (AEAEMBAL.ID_AEAPRODU = AEAPRODU.ID_AEAPRODU) AND (AEAEMBAL.REFERENCIA LIKE '%" + textoPesquisa + "%')) > 0)) OR " +
-                                    "(AEAPRODU.DESCRICAO_AUXILIAR LIKE '%" + textoPesquisa + "%') OR (AEAPRODU.CODIGO_BARRAS = '" + editTextPesquisar.getText().toString() + "') ";
-                        }
-
-                        intent.putExtra(ListaProdutoActivity.KEY_TELA_CHAMADA, ListaProdutoActivity.LOCACAO_PRODUTO_ACTIVITY);
-                        intent.putExtra(ListaProdutoActivity.KEY_TEXTO_PESQUISA, editTextPesquisar.getText().toString());
-                        intent.putExtra(ListaProdutoActivity.KEY_WHERE_PESQUISA, whereProduto);
-                        // Abre a activity aquardando uma resposta
-                        startActivityForResult(intent, REQUISICAO_DADOS_PRODUTOS);
-
-                    } else {
-                        Toast.makeText(LocacaoProdutoActivity.this, "Campos de pesquisa vazio.", Toast.LENGTH_LONG).show();
-                    }
+                    pesquisarProduto();
                 }
 
                 return false;
@@ -193,6 +133,45 @@ public class LocacaoProdutoActivity extends AppCompatActivity {
             }
         });
 
+        buttonEscanearCodigoBarraProduto.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                campoQueChamouLeitor = CAMPO_PRODUTO;
+
+                new ZxingOrient(LocacaoProdutoActivity.this)
+                        .setInfo(getResources().getString(R.string.escanear_codigo_produto))
+                        .setVibration(true)
+                        .initiateScan();
+            }
+        });
+
+        buttonEscanearCodigoBarraLocacaoAtiva.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                campoQueChamouLeitor = CAMPO_LOCACAO_ATIVA;
+
+                new ZxingOrient(LocacaoProdutoActivity.this)
+                        .setInfo(getResources().getString(R.string.escanear_codigo_produto))
+                        .setVibration(true)
+                        .initiateScan();
+            }
+        });
+
+        buttonEscanearCodigoBarraLocacaoReserva.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                campoQueChamouLeitor = CAMPO_LOCACAO_RESERVA;
+
+                new ZxingOrient(LocacaoProdutoActivity.this)
+                        .setInfo(getResources().getString(R.string.escanear_codigo_produto))
+                        .setVibration(true)
+                        .initiateScan();
+            }
+        });
+
     } //Fim onCreate
 
     @Override
@@ -228,6 +207,7 @@ public class LocacaoProdutoActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        ZxingOrientResult retornoEscanerCodigoBarra = ZxingOrient.parseActivityResult(requestCode, resultCode, data);
 
         // Checa a requisicao
         if (requestCode == REQUISICAO_DADOS_PRODUTOS){
@@ -242,6 +222,38 @@ public class LocacaoProdutoActivity extends AppCompatActivity {
                     loaderDetalhesProdutos.execute();
                 }
             }
+        }
+        // Checa se retornou algum dado do leitor de codigo de barra
+        if(retornoEscanerCodigoBarra != null) {
+
+            // Checha se retornou algum dado
+            if(retornoEscanerCodigoBarra.getContents() == null) {
+                Log.d("SAGA", "Cancelled scan - CadastroEmbalagemActivity");
+
+                Toast.makeText(this, getResources().getString(R.string.escaneamento_cancelado), Toast.LENGTH_LONG).show();
+
+            } else {
+                Log.d("SAGA", "Scanned");
+                //Toast.makeText(this, "Scanned: " + retornoEscanerCodigoBarra.getContents(), Toast.LENGTH_LONG).show();
+
+                if (campoQueChamouLeitor == CAMPO_PRODUTO) {
+                    // Preenche o campo de pesquisa com os dados retornado
+                    editTextPesquisar.setText(retornoEscanerCodigoBarra.getContents());
+                    // Apos retornar o codigo do produto executa a funcao para pesquisar o produto
+                    pesquisarProduto();
+
+                } else if (campoQueChamouLeitor == CAMPO_LOCACAO_ATIVA){
+                    // Preenche o campos de locacao ativa com os dados retornado do leitor de codigo de barra
+                    editTextLocacaoAtiva.setText(retornoEscanerCodigoBarra.getContents());
+
+                } else if (campoQueChamouLeitor == CAMPO_LOCACAO_RESERVA){
+                    // Preenche o campos de locacao ativa com os dados retornado do leitor de codigo de barra
+                    editTextLocacaoReserva.setText(retornoEscanerCodigoBarra.getContents());
+                }
+            }
+        } else {
+            // This is important, otherwise the retornoEscanerCodigoBarra will not be passed to the fragment
+            super.onActivityResult(requestCode, resultCode, data);
         }
     }
 
@@ -259,6 +271,9 @@ public class LocacaoProdutoActivity extends AppCompatActivity {
         textDescricaoProduto = (TextView) findViewById(R.id.activity_locacao_produto_text_descricao_produto);
         textMensagem = (TextView) findViewById(R.id.activity_locacao_produto_mensagem);
         progressStatus = (ProgressBar) findViewById(R.id.activity_locacao_produto_progress_status);
+        buttonEscanearCodigoBarraProduto = (Button) findViewById(R.id.activity_locacao_produto_button_escanear_codigo_barra_produto);
+        buttonEscanearCodigoBarraLocacaoAtiva = (Button) findViewById(R.id.activity_locacao_produto_button_escanear_codigo_barra_locacao_ativa);
+        buttonEscanearCodigoBarraLocacaoReserva = (Button) findViewById(R.id.activity_locacao_produto_button_escanear_codigo_barra_locacao_reserva);
 
         toolbarCabecalho = (Toolbar) findViewById(R.id.activity_locacao_produto_toolbar_cabecalho);
         // Adiciona uma titulo para toolbar
@@ -271,6 +286,76 @@ public class LocacaoProdutoActivity extends AppCompatActivity {
         linearLayoutPrincipal = (LinearLayout) findViewById(R.id.activity_locacao_produto_linearLayoutPrincipal);
     }
 
+    private void pesquisarProduto(){
+        // Checa se tem alguma coisa digitada no campos
+        if (editTextPesquisar.getText().length() > 0) {
+
+            String whereProduto = "";
+            String textoPesquisa = editTextPesquisar.getText().toString().replace(" ", "%");
+            Intent intent = new Intent(LocacaoProdutoActivity.this, ListaProdutoActivity.class);
+
+            // Checa se eh uma letra
+            if (Character.isLetter(editTextPesquisar.getText().charAt(1))) {
+
+                whereProduto += "(AEAPRODU.DESCRICAO LIKE '%" + textoPesquisa + "%') OR (AEAMARCA.DESCRICAO LIKE '%" + textoPesquisa + "%' ) OR " +
+                        "(AEAPRODU.REFERENCIA LIKE '%" + textoPesquisa + "%') OR ((SELECT COUNT(*) FROM AEAEMBAL " +
+                        "WHERE (AEAEMBAL.ID_AEAPRODU = AEAPRODU.ID_AEAPRODU) AND (AEAEMBAL.REFERENCIA LIKE '%" + textoPesquisa + "%')) > 0)";
+
+                // Checo se eh um codigo interno ou estrutural
+            } else if (editTextPesquisar.getText().toString().length() < 8) {
+
+                boolean apenasNumeros = true;
+
+                for (char digito : editTextPesquisar.getText().toString().toCharArray()) {
+                    // Checa se eh um numero
+                    if (!Character.isDigit(digito)) {
+                        apenasNumeros = false;
+                    }
+                }
+                if (apenasNumeros) {
+
+                    whereProduto += "(AEAPRODU.CODIGO = " + editTextPesquisar.getText().toString() + ") OR (AEAPRODU.CODIGO_ESTRUTURAL = '" + editTextPesquisar.getText().toString() + "') " +
+                            "OR (AEAPRODU.REFERENCIA = '" + editTextPesquisar.getText().toString() + "') ";
+
+                } else {
+                    whereProduto += "(AEAPRODU.DESCRICAO LIKE '%" + textoPesquisa + "%') OR (AEAMARCA.DESCRICAO LIKE '%" + textoPesquisa + "%' ) OR " +
+                            "(AEAPRODU.REFERENCIA LIKE '%" + textoPesquisa + "%')";
+                }
+
+            } else if (editTextPesquisar.getText().toString().length() >= 8) {
+                boolean apenasNumeros = true;
+
+                for (char digito : editTextPesquisar.getText().toString().toCharArray()) {
+                    // Checa se eh um numero
+                    if (!Character.isDigit(digito)) {
+                        apenasNumeros = false;
+                    }
+                }
+                if (apenasNumeros) {
+                    whereProduto += "(AEAPRODU.CODIGO_BARRAS = '" + editTextPesquisar.getText().toString() + "') OR (AEAPRODU.REFERENCIA = '" + editTextPesquisar.getText().toString() + "') " +
+                            "OR ((SELECT COUNT(*) FROM AEAEMBAL " +
+                            "WHERE (AEAEMBAL.ID_AEAPRODU = AEAPRODU.ID_AEAPRODU) AND (AEAEMBAL.CODIGO_BARRAS = '" + editTextPesquisar.getText().toString() + "')) > 0) ";
+                    //"OR (AEAEMBAL.CODIGO_BARRAS = '" + editTextPesquisar.getText().toString() + "')";
+                }
+
+            } else {
+                whereProduto += "(AEAPRODU.DESCRICAO LIKE '%" + textoPesquisa + "%') OR (AEAMARCA.DESCRICAO LIKE '%" + textoPesquisa + "%' ) OR " +
+                        "(AEAPRODU.REFERENCIA LIKE '%" + textoPesquisa + "%') OR " +
+                        "((SELECT COUNT(*) FROM AEAEMBAL \n" +
+                        "WHERE (AEAEMBAL.ID_AEAPRODU = AEAPRODU.ID_AEAPRODU) AND (AEAEMBAL.REFERENCIA LIKE '%" + textoPesquisa + "%')) > 0)) OR " +
+                        "(AEAPRODU.DESCRICAO_AUXILIAR LIKE '%" + textoPesquisa + "%') OR (AEAPRODU.CODIGO_BARRAS = '" + editTextPesquisar.getText().toString() + "') ";
+            }
+
+            intent.putExtra(ListaProdutoActivity.KEY_TELA_CHAMADA, ListaProdutoActivity.LOCACAO_PRODUTO_ACTIVITY);
+            intent.putExtra(ListaProdutoActivity.KEY_TEXTO_PESQUISA, editTextPesquisar.getText().toString());
+            intent.putExtra(ListaProdutoActivity.KEY_WHERE_PESQUISA, whereProduto);
+            // Abre a activity aquardando uma resposta
+            startActivityForResult(intent, REQUISICAO_DADOS_PRODUTOS);
+
+        } else {
+            Toast.makeText(LocacaoProdutoActivity.this, "Campos de pesquisa vazio.", Toast.LENGTH_LONG).show();
+        }
+    }
 
 
     public class LoaderDetalhesProdutos extends AsyncTask<Void, Void, Void> {

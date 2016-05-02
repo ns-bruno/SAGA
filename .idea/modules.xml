@@ -4,6 +4,7 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/SAGA.iml" filepath="$PROJECT_DIR$/SAGA.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/zxing-orient-2.1.1/zxing-orient-2.1.1.iml" filepath="$PROJECT_DIR$/zxing-orient-2.1.1/zxing-orient-2.1.1.iml" />
     </modules>
   </component>
 </project>

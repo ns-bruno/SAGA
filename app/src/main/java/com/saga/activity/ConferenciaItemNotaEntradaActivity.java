@@ -94,7 +94,7 @@ public class ConferenciaItemNotaEntradaActivity extends AppCompatActivity {
     private void restauraCampo() {
         toolbarCabecalho = (Toolbar) findViewById(R.id.activity_conferencia_item_nota_entrada_toolbar_cabecalho);
         // Adiciona uma titulo para toolbar
-        toolbarCabecalho.setTitle(this.getResources().getString(R.string.app_name));
+        toolbarCabecalho.setTitle(this.getResources().getString(R.string.detalhes_produto));
         toolbarCabecalho.setTitleTextColor(getResources().getColor(R.color.branco));
         //toolbarInicio.setLogo(R.drawable.ic_launcher);
         // Seta uma toolBar para esta activiy(tela)

@@ -86,6 +86,12 @@
     <string name="produto_inserido_endereco_com_sucesso">Produto inserido no endereço com sucesso!</string>
     <string name="nao_conseguimos_inserir_produto_inserido_endereco_com_sucesso">Não conseguimos inserir o produto no endereço com sucesso!</string>
     <string name="excluir_produto_endereco">Excluir Produto do Endereço</string>
+    <string name="devolucao">Devolução</string>
+    <string name="detalhes_produto">Detalhes do Produto</string>
+    <string name="escanear_codigo_produto">Escanear o Código do Produto.</string>
+    <string name="escanear_edereco_locacao">Escanear o Endereço/Locação</string>
+    <string name="nao_foir_informado_nenhuma_locacao">Não foi informado nenhum endereço/locação</string>
+    <string name="escaneamento_cancelado">Escaneamento Cancelado</string>
 
     <string-array name="tab_nota_fiscal_entrada">
         <item>Conferir Entradas</item>

@@ -18,6 +18,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AbsListView;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.ProgressBar;
@@ -40,6 +41,9 @@ import com.saga.funcoes.rotinas.ProdutoRotinas;
 import java.util.ArrayList;
 import java.util.List;
 
+import me.sudar.zxingorient.ZxingOrient;
+import me.sudar.zxingorient.ZxingOrientResult;
+
 /**
  * Created by Bruno Nogueira Silva on 07/04/2016.
  */
@@ -50,11 +54,15 @@ public class LocacaoEnderecoActivity extends AppCompatActivity {
     private TextView textTipoLocacao;
     private ListView listViewListaProduto;
     private Spinner spinnerEstoque;
+    private Button buttonEscanearCodigoBarra;
+    private Button buttonEscanearCodigoBarraProduto;
     private String tipoLocacao = null;
     private ProgressBar progressStatus;
     private ItemUniversalAdapter adapterListaProdutos, adapterListaLoces;
     private List<ProdutoLojaBeans> listaProdutoLojaSelecionado;
     private int totalItemSelecionado = 0;
+    private final String CAMPO_LOCACAO = "CAMPO_LOCACAO", CAMPO_PRODUTO = "CAMPO_PRODUTO";
+    private String campoQueChamouLeitor = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,44 +77,8 @@ public class LocacaoEnderecoActivity extends AppCompatActivity {
 
                 if (keyCode == KeyEvent.KEYCODE_ENTER && event.getAction() == KeyEvent.ACTION_DOWN) {
 
-                    new AlertDialogWrapper.Builder(v.getContext())
-                            .setTitle(v.getResources().getString(R.string.tipo_locacao) + " | " + editTextPesquisaLocacao.getText().toString())
-                            .setMessage(R.string.favor_escolha_qual_tipo_dessa_locacao)
-                            .setPositiveButton(R.string.locacao_ativa, new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    // Marca o tipo de locacao
-                                    textTipoLocacao.setText(getResources().getString(R.string.locacao_ativa));
-                                    tipoLocacao = "A";
-                                    // Muda o foco do cursor
-                                    editTextPesquisaProduto.requestFocus();
-
-                                    CarregarListaProdutosLocacao carregarListaProdutosLocacao = new CarregarListaProdutosLocacao(LocacaoEnderecoActivity.this, tipoLocacao, editTextPesquisaLocacao.getText().toString());
-                                    carregarListaProdutosLocacao.execute();
-
-                                    // Fecha o dialog
-                                    dialog.dismiss();
-                                }
-                            })
-                            .setNegativeButton(R.string.locacao_reserva, new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    // Marca o tipo de locacao
-                                    textTipoLocacao.setText(getResources().getString(R.string.locacao_reserva));
-                                    tipoLocacao = "R";
-
-                                    // Muda o foco do cursor para o campo de pesquisa do produto
-                                    editTextPesquisaProduto.requestFocus();
-
-                                    // Carrega a lista de produtos da locacao
-                                    CarregarListaProdutosLocacao carregarListaProdutosLocacao = new CarregarListaProdutosLocacao(getApplicationContext(), tipoLocacao, editTextPesquisaLocacao.getText().toString());
-                                    carregarListaProdutosLocacao.execute();
-
-                                    // Fecha o dialog
-                                    dialog.dismiss();
-                                }
-                            }).show();
-                    toolbarCabecalho.setTitle(editTextPesquisaLocacao.getText().toString());
+                    // Executa um alert para selecionar o tipo de locacao
+                    informarTipoLocacao();
                 }
 
                 return false;
@@ -121,74 +93,7 @@ public class LocacaoEnderecoActivity extends AppCompatActivity {
                 if (keyCode == KeyEvent.KEYCODE_ENTER && event.getAction() == KeyEvent.ACTION_DOWN) {
                     Log.d("SAGA", "enter_key_called - LocacaoProdutoActivity");
 
-                    // Checa se tem alguma coisa digitada no campos
-                    if (editTextPesquisaProduto.getText().length() > 0) {
-
-                        String whereProduto = "";
-                        String textoPesquisa = editTextPesquisaProduto.getText().toString().replace(" ", "%");
-                        Intent intent = new Intent(LocacaoEnderecoActivity.this, ListaProdutoActivity.class);
-
-                        // Checa se eh uma letra
-                        if (Character.isLetter(editTextPesquisaProduto.getText().charAt(1))) {
-
-                            whereProduto += "(AEAPRODU.DESCRICAO LIKE '%" + textoPesquisa + "%') OR (AEAMARCA.DESCRICAO LIKE '%" + textoPesquisa + "%' ) OR " +
-                                    "(AEAPRODU.REFERENCIA LIKE '%" + textoPesquisa + "%') OR ((SELECT COUNT(*) FROM AEAEMBAL " +
-                                    "WHERE (AEAEMBAL.ID_AEAPRODU = AEAPRODU.ID_AEAPRODU) AND (AEAEMBAL.REFERENCIA LIKE '%" + textoPesquisa + "%')) > 0)";
-
-                            // Checo se eh um codigo interno ou estrutural
-                        } else if (editTextPesquisaProduto.getText().toString().length() < 8) {
-
-                            boolean apenasNumeros = true;
-
-                            for (char digito : editTextPesquisaProduto.getText().toString().toCharArray()) {
-                                // Checa se eh um numero
-                                if (!Character.isDigit(digito)) {
-                                    apenasNumeros = false;
-                                }
-                            }
-                            if (apenasNumeros) {
-
-                                whereProduto += "(AEAPRODU.CODIGO = " + editTextPesquisaProduto.getText().toString() + ") OR (AEAPRODU.CODIGO_ESTRUTURAL = '" + editTextPesquisaProduto.getText().toString() + "') " +
-                                        "OR (AEAPRODU.REFERENCIA = '" + editTextPesquisaProduto.getText().toString() + "') ";
-
-                            } else {
-                                whereProduto += "(AEAPRODU.DESCRICAO LIKE '%" + textoPesquisa + "%') OR (AEAMARCA.DESCRICAO LIKE '%" + textoPesquisa + "%' ) OR " +
-                                        "(AEAPRODU.REFERENCIA LIKE '%" + textoPesquisa + "%')";
-                            }
-
-                        } else if (editTextPesquisaProduto.getText().toString().length() >= 8) {
-                            boolean apenasNumeros = true;
-
-                            for (char digito : editTextPesquisaProduto.getText().toString().toCharArray()) {
-                                // Checa se eh um numero
-                                if (!Character.isDigit(digito)) {
-                                    apenasNumeros = false;
-                                }
-                            }
-                            if (apenasNumeros) {
-                                whereProduto += "(AEAPRODU.CODIGO_BARRAS = '" + editTextPesquisaProduto.getText().toString() + "') OR (AEAPRODU.REFERENCIA = '" + editTextPesquisaProduto.getText().toString() + "') " +
-                                        "OR ((SELECT COUNT(*) FROM AEAEMBAL " +
-                                        "WHERE (AEAEMBAL.ID_AEAPRODU = AEAPRODU.ID_AEAPRODU) AND (AEAEMBAL.CODIGO_BARRAS = '" + editTextPesquisaProduto.getText().toString() + "')) > 0) ";
-                                //"OR (AEAEMBAL.CODIGO_BARRAS = '" + editTextPesquisar.getText().toString() + "')";
-                            }
-
-                        } else {
-                            whereProduto += "(AEAPRODU.DESCRICAO LIKE '%" + textoPesquisa + "%') OR (AEAMARCA.DESCRICAO LIKE '%" + textoPesquisa + "%' ) OR " +
-                                    "(AEAPRODU.REFERENCIA LIKE '%" + textoPesquisa + "%') OR " +
-                                    "((SELECT COUNT(*) FROM AEAEMBAL \n" +
-                                    "WHERE (AEAEMBAL.ID_AEAPRODU = AEAPRODU.ID_AEAPRODU) AND (AEAEMBAL.REFERENCIA LIKE '%" + textoPesquisa + "%')) > 0)) OR " +
-                                    "(AEAPRODU.DESCRICAO_AUXILIAR LIKE '%" + textoPesquisa + "%') OR (AEAPRODU.CODIGO_BARRAS = '" + editTextPesquisaProduto.getText().toString() + "') ";
-                        }
-
-                        intent.putExtra(ListaProdutoActivity.KEY_TELA_CHAMADA, ListaProdutoActivity.LOCACAO_PRODUTO_ACTIVITY);
-                        intent.putExtra(ListaProdutoActivity.KEY_TEXTO_PESQUISA, editTextPesquisaProduto.getText().toString());
-                        intent.putExtra(ListaProdutoActivity.KEY_WHERE_PESQUISA, whereProduto);
-                        // Abre a activity aquardando uma resposta
-                        startActivityForResult(intent, LocacaoProdutoActivity.REQUISICAO_DADOS_PRODUTOS);
-
-                    } else {
-                        Toast.makeText(LocacaoEnderecoActivity.this, "Campos de pesquisa vazio.", Toast.LENGTH_LONG).show();
-                    }
+                    pesquisarProduto();
                 }
                 return false;
             }
@@ -199,11 +104,11 @@ public class LocacaoEnderecoActivity extends AppCompatActivity {
             @Override
             public void onItemCheckedStateChanged(ActionMode mode, int position, long id, boolean checked) {
                 // Checa se a lista de selecionado eh nula
-                if(listaProdutoLojaSelecionado == null){
+                if (listaProdutoLojaSelecionado == null) {
                     listaProdutoLojaSelecionado = new ArrayList<ProdutoLojaBeans>();
                 }
                 // Checa se o comando eh de selecao ou descelecao
-                if(checked){
+                if (checked) {
                     // Incrementa o totalizador
                     totalItemSelecionado = totalItemSelecionado + 1;
                     //listaItemOrcamentoSelecionado.add(listaItemOrcamento.get(position));
@@ -212,12 +117,12 @@ public class LocacaoEnderecoActivity extends AppCompatActivity {
                     adapterListaProdutos.getListaProdutoLoja().get(position).setTagSelectContext(true);
                     adapterListaProdutos.notifyDataSetChanged();
 
-                }else {
+                } else {
                     int i = 0;
-                    while(i < listaProdutoLojaSelecionado.size()){
+                    while (i < listaProdutoLojaSelecionado.size()) {
 
                         // Checar se a posicao desmarcada esta na lista
-                        if(listaProdutoLojaSelecionado.get(i).getIdProdutoLoja() == adapterListaProdutos.getListaProdutoLoja().get(position).getIdProdutoLoja()){
+                        if (listaProdutoLojaSelecionado.get(i).getIdProdutoLoja() == adapterListaProdutos.getListaProdutoLoja().get(position).getIdProdutoLoja()) {
                             // Remove a posicao da lista de selecao
                             listaProdutoLojaSelecionado.remove(i);
                             // Diminui o total de itens selecionados
@@ -232,7 +137,7 @@ public class LocacaoEnderecoActivity extends AppCompatActivity {
                     }
                 }
                 // Checa se tem mais de um item selecionados
-                if(totalItemSelecionado > 1){
+                if (totalItemSelecionado > 1) {
                     // Muda o titulo do menu de contexto quando seleciona os itens
                     mode.setTitle(totalItemSelecionado + " Selecionados");
                 } else {
@@ -265,13 +170,13 @@ public class LocacaoEnderecoActivity extends AppCompatActivity {
             @Override
             public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
 
-                switch (item.getItemId()){
+                switch (item.getItemId()) {
                     case R.id.menu_activity_locacao_endereco_contextual_excluir_produto_locacao:
 
                         LocesBeans loces = (LocesBeans) spinnerEstoque.getItemAtPosition(spinnerEstoque.getSelectedItemPosition());
 
                         // Passa por todos os itens selecionados
-                        for(int i = 0; i < listaProdutoLojaSelecionado.size(); i++) {
+                        for (int i = 0; i < listaProdutoLojaSelecionado.size(); i++) {
                             // Executa o salvar locacao (que no caso vai ficar nulo o endereco da locacao)
                             SalvarLocacao salvarLocacao = new SalvarLocacao(LocacaoEnderecoActivity.this, tipoLocacao, "null", listaProdutoLojaSelecionado.get(i).getIdProdutoLoja(), loces.getIdLoces());
                             salvarLocacao.execute();
@@ -302,6 +207,39 @@ public class LocacaoEnderecoActivity extends AppCompatActivity {
             }
         });
 
+        buttonEscanearCodigoBarra.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Marca qual eh o campo que esta chamando o leitor de codigo de barra
+                campoQueChamouLeitor = CAMPO_LOCACAO;
+
+                new ZxingOrient(LocacaoEnderecoActivity.this)
+                        .setInfo(getResources().getString(R.string.escanear_edereco_locacao))
+                        .setVibration(true)
+                        .initiateScan();
+
+            }
+        });
+
+        buttonEscanearCodigoBarraProduto.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                if (editTextPesquisaLocacao.getText().length() > 0) {
+                    // Marca qual eh o campo que esta chamando o leitor de codigo de barra
+                    campoQueChamouLeitor = CAMPO_PRODUTO;
+
+                    new ZxingOrient(LocacaoEnderecoActivity.this)
+                            .setInfo(getResources().getString(R.string.escanear_edereco_locacao))
+                            .setVibration(true)
+                            .initiateScan();
+
+                } else {
+                    Toast.makeText(LocacaoEnderecoActivity.this, getResources().getString(R.string.nao_foir_informado_nenhuma_locacao), Toast.LENGTH_LONG).show();
+                }
+            }
+        });
+
         // Carrega a lista de estoques
         CarregarListaLoces carregarListaLoces = new CarregarListaLoces(LocacaoEnderecoActivity.this);
         carregarListaLoces.execute();
@@ -311,6 +249,8 @@ public class LocacaoEnderecoActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        //IntentResult retornoEscanerCodigoBarra = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
+        ZxingOrientResult retornoEscanerCodigoBarra = ZxingOrient.parseActivityResult(requestCode, resultCode, data);
 
         // Checa a requisicao
         if (requestCode == LocacaoProdutoActivity.REQUISICAO_DADOS_PRODUTOS){
@@ -329,6 +269,36 @@ public class LocacaoEnderecoActivity extends AppCompatActivity {
                 }
             }
         }
+
+        if(retornoEscanerCodigoBarra != null) {
+            // Checa se retornou algum codigo
+            if(retornoEscanerCodigoBarra.getContents() == null) {
+                Log.d("SAGA", "Cancelled scan");
+
+                Toast.makeText(this, "Cancelado", Toast.LENGTH_LONG).show();
+
+            } else {
+                Log.d("SAGA", "Scanned");
+                //Toast.makeText(this, "Scanned: " + retornoEscanerCodigoBarra.getContents(), Toast.LENGTH_LONG).show();
+
+                if (campoQueChamouLeitor == CAMPO_LOCACAO){
+                    // Seta o campo de pesquisa de locacao com os dados retornando da leitura
+                    editTextPesquisaLocacao.setText(retornoEscanerCodigoBarra.getContents());
+
+                    // Executa um alert para selecionar o tipo de locacao
+                    informarTipoLocacao();
+
+                } else if (campoQueChamouLeitor == CAMPO_PRODUTO){
+                    // Preenche o campo de pesquisa de produto com os dados retornado do leitor de codigo de barra
+                    editTextPesquisaProduto.setText(retornoEscanerCodigoBarra.getContents());
+
+                    pesquisarProduto();
+                }
+            }
+        } /*else {
+            // This is important, otherwise the retornoEscanerCodigoBarra will not be passed to the fragment
+            super.onActivityResult(requestCode, resultCode, data);
+        }*/
     }
 
 
@@ -355,6 +325,8 @@ public class LocacaoEnderecoActivity extends AppCompatActivity {
         spinnerEstoque = (Spinner) findViewById(R.id.activity_locacao_endereco_spinner_estoque);
         listViewListaProduto = (ListView) findViewById(R.id.activity_locacao_endereco_listView_lista_produto);
         listViewListaProduto.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
+        buttonEscanearCodigoBarra = (Button) findViewById(R.id.activity_locacao_endereco_button_escanear_codigo_barra);
+        buttonEscanearCodigoBarraProduto = (Button) findViewById(R.id.activity_locacao_endereco_button_escanear_codigo_barra_produto);
         progressStatus = (ProgressBar) findViewById(R.id.activity_locacao_endereco_progressStatus);
         toolbarCabecalho = (Toolbar) findViewById(R.id.activity_locacaoendereco_toolbar_cabecalho);
         // Adiciona uma titulo para toolbar
@@ -365,6 +337,117 @@ public class LocacaoEnderecoActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
     }
 
+    private void informarTipoLocacao(){
+        new AlertDialogWrapper.Builder(this)
+                .setTitle(getResources().getString(R.string.tipo_locacao) + " | " + editTextPesquisaLocacao.getText().toString())
+                .setMessage(R.string.favor_escolha_qual_tipo_dessa_locacao)
+                .setPositiveButton(R.string.locacao_ativa, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        // Marca o tipo de locacao
+                        textTipoLocacao.setText(getResources().getString(R.string.locacao_ativa));
+                        tipoLocacao = "A";
+                        // Muda o foco do cursor
+                        editTextPesquisaProduto.requestFocus();
+
+                        CarregarListaProdutosLocacao carregarListaProdutosLocacao = new CarregarListaProdutosLocacao(LocacaoEnderecoActivity.this, tipoLocacao, editTextPesquisaLocacao.getText().toString());
+                        carregarListaProdutosLocacao.execute();
+
+                        // Fecha o dialog
+                        dialog.dismiss();
+                    }
+                })
+                .setNegativeButton(R.string.locacao_reserva, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        // Marca o tipo de locacao
+                        textTipoLocacao.setText(getResources().getString(R.string.locacao_reserva));
+                        tipoLocacao = "R";
+
+                        // Muda o foco do cursor para o campo de pesquisa do produto
+                        editTextPesquisaProduto.requestFocus();
+
+                        // Carrega a lista de produtos da locacao
+                        CarregarListaProdutosLocacao carregarListaProdutosLocacao = new CarregarListaProdutosLocacao(getApplicationContext(), tipoLocacao, editTextPesquisaLocacao.getText().toString());
+                        carregarListaProdutosLocacao.execute();
+
+                        // Fecha o dialog
+                        dialog.dismiss();
+                    }
+                }).show();
+        toolbarCabecalho.setTitle(editTextPesquisaLocacao.getText().toString());
+    }
+
+    private void pesquisarProduto(){
+        // Checa se tem alguma coisa digitada no campos
+        if (editTextPesquisaProduto.getText().length() > 0) {
+
+            String whereProduto = "";
+            String textoPesquisa = editTextPesquisaProduto.getText().toString().replace(" ", "%");
+            Intent intent = new Intent(LocacaoEnderecoActivity.this, ListaProdutoActivity.class);
+
+            // Checa se eh uma letra
+            if (Character.isLetter(editTextPesquisaProduto.getText().charAt(1))) {
+
+                whereProduto += "(AEAPRODU.DESCRICAO LIKE '%" + textoPesquisa + "%') OR (AEAMARCA.DESCRICAO LIKE '%" + textoPesquisa + "%' ) OR " +
+                        "(AEAPRODU.REFERENCIA LIKE '%" + textoPesquisa + "%') OR ((SELECT COUNT(*) FROM AEAEMBAL " +
+                        "WHERE (AEAEMBAL.ID_AEAPRODU = AEAPRODU.ID_AEAPRODU) AND (AEAEMBAL.REFERENCIA LIKE '%" + textoPesquisa + "%')) > 0)";
+
+                // Checo se eh um codigo interno ou estrutural
+            } else if (editTextPesquisaProduto.getText().toString().length() < 8) {
+
+                boolean apenasNumeros = true;
+
+                for (char digito : editTextPesquisaProduto.getText().toString().toCharArray()) {
+                    // Checa se eh um numero
+                    if (!Character.isDigit(digito)) {
+                        apenasNumeros = false;
+                    }
+                }
+                if (apenasNumeros) {
+
+                    whereProduto += "(AEAPRODU.CODIGO = " + editTextPesquisaProduto.getText().toString() + ") OR (AEAPRODU.CODIGO_ESTRUTURAL = '" + editTextPesquisaProduto.getText().toString() + "') " +
+                            "OR (AEAPRODU.REFERENCIA = '" + editTextPesquisaProduto.getText().toString() + "') ";
+
+                } else {
+                    whereProduto += "(AEAPRODU.DESCRICAO LIKE '%" + textoPesquisa + "%') OR (AEAMARCA.DESCRICAO LIKE '%" + textoPesquisa + "%' ) OR " +
+                            "(AEAPRODU.REFERENCIA LIKE '%" + textoPesquisa + "%')";
+                }
+
+            } else if (editTextPesquisaProduto.getText().toString().length() >= 8) {
+                boolean apenasNumeros = true;
+
+                for (char digito : editTextPesquisaProduto.getText().toString().toCharArray()) {
+                    // Checa se eh um numero
+                    if (!Character.isDigit(digito)) {
+                        apenasNumeros = false;
+                    }
+                }
+                if (apenasNumeros) {
+                    whereProduto += "(AEAPRODU.CODIGO_BARRAS = '" + editTextPesquisaProduto.getText().toString() + "') OR (AEAPRODU.REFERENCIA = '" + editTextPesquisaProduto.getText().toString() + "') " +
+                            "OR ((SELECT COUNT(*) FROM AEAEMBAL " +
+                            "WHERE (AEAEMBAL.ID_AEAPRODU = AEAPRODU.ID_AEAPRODU) AND (AEAEMBAL.CODIGO_BARRAS = '" + editTextPesquisaProduto.getText().toString() + "')) > 0) ";
+                    //"OR (AEAEMBAL.CODIGO_BARRAS = '" + editTextPesquisar.getText().toString() + "')";
+                }
+
+            } else {
+                whereProduto += "(AEAPRODU.DESCRICAO LIKE '%" + textoPesquisa + "%') OR (AEAMARCA.DESCRICAO LIKE '%" + textoPesquisa + "%' ) OR " +
+                        "(AEAPRODU.REFERENCIA LIKE '%" + textoPesquisa + "%') OR " +
+                        "((SELECT COUNT(*) FROM AEAEMBAL \n" +
+                        "WHERE (AEAEMBAL.ID_AEAPRODU = AEAPRODU.ID_AEAPRODU) AND (AEAEMBAL.REFERENCIA LIKE '%" + textoPesquisa + "%')) > 0)) OR " +
+                        "(AEAPRODU.DESCRICAO_AUXILIAR LIKE '%" + textoPesquisa + "%') OR (AEAPRODU.CODIGO_BARRAS = '" + editTextPesquisaProduto.getText().toString() + "') ";
+            }
+
+            intent.putExtra(ListaProdutoActivity.KEY_TELA_CHAMADA, ListaProdutoActivity.LOCACAO_PRODUTO_ACTIVITY);
+            intent.putExtra(ListaProdutoActivity.KEY_TEXTO_PESQUISA, editTextPesquisaProduto.getText().toString());
+            intent.putExtra(ListaProdutoActivity.KEY_WHERE_PESQUISA, whereProduto);
+            // Abre a activity aquardando uma resposta
+            startActivityForResult(intent, LocacaoProdutoActivity.REQUISICAO_DADOS_PRODUTOS);
+
+        } else {
+            Toast.makeText(LocacaoEnderecoActivity.this, "Campo de pesquisa de produto vazio.", Toast.LENGTH_LONG).show();
+        }
+    }
 
     public class CarregarListaProdutosLocacao extends AsyncTask<Void, Void, Void> {
 

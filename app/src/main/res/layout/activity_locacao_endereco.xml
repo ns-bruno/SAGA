@@ -21,16 +21,32 @@
             app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
             android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
 
-            <EditText
+            <LinearLayout
+                android:orientation="horizontal"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:id="@+id/activity_locacao_endereco_editText_pesquisar_locacao"
-                android:hint="@string/pesquisar_locacao"
-                android:inputType="textCapCharacters" >
-                <requestFocus/>
-            </EditText>
+                android:layout_height="match_parent" >
+
+                <EditText
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:id="@+id/activity_locacao_endereco_editText_pesquisar_locacao"
+                    android:hint="@string/pesquisar_locacao"
+                    android:inputType="textCapCharacters"
+                    android:layout_weight="1">
+                    <requestFocus/>
+                </EditText>
+
+                <Button
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:id="@+id/activity_locacao_endereco_button_escanear_codigo_barra"
+                    android:layout_weight="5"
+                    android:background="@mipmap/ic_barcode_scan" />
+
+            </LinearLayout>
 
         </android.support.v7.widget.Toolbar>
+
     </LinearLayout>
 
     <LinearLayout
@@ -40,12 +56,27 @@
         android:layout_gravity="center_horizontal"
         android:padding="10dp">
 
-        <EditText
+        <LinearLayout
+            android:orientation="horizontal"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/activity_locacao_endereco_editText_pesquisa_produto"
-            android:hint="@string/pesquisar_produto"
-            android:inputType="textCapCharacters" />
+            android:layout_height="wrap_content" >
+
+            <EditText
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/activity_locacao_endereco_editText_pesquisa_produto"
+                android:hint="@string/pesquisar_produto"
+                android:inputType="textCapCharacters"
+                android:layout_weight="1" />
+
+            <Button
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:id="@+id/activity_locacao_endereco_button_escanear_codigo_barra_produto"
+                android:layout_weight="5"
+                android:background="@mipmap/ic_barcode_scan_light" />
+
+        </LinearLayout>
 
         <TextView
             android:layout_width="wrap_content"

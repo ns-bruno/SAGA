@@ -1,17 +1,21 @@
 package com.saga.activity;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.saga.R;
 import com.saga.adapter.ItemUniversalAdapter;
@@ -26,6 +30,9 @@ import com.saga.funcoes.rotinas.UnidadeVendaRotinas;
 import java.util.ArrayList;
 import java.util.List;
 
+import me.sudar.zxingorient.ZxingOrient;
+import me.sudar.zxingorient.ZxingOrientResult;
+
 /**
  * Created by Bruno Nogueira Silva on 10/02/2016.
  */
@@ -36,6 +43,7 @@ public class CadastroEmbalagemActivity extends AppCompatActivity {
     private Toolbar toolbarCabecalho;
     private TextView textStatus;
     private ProgressBar progressBarStatus;
+    private Button buttonEscanearCodigoBarraProduto;
     public static final String KEY_ID_PRODUTO = "ID_AEAPRODU",
                                KEY_ID_AEAEMBAL = "ID_AEAEMBAL";
     private int idProduto = -1;
@@ -65,7 +73,50 @@ public class CadastroEmbalagemActivity extends AppCompatActivity {
 
         CarregarListas carregarListas = new CarregarListas(CadastroEmbalagemActivity.this);
         carregarListas.execute();
-        
+
+        buttonEscanearCodigoBarraProduto.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                if (idProduto > 0) {
+                    new ZxingOrient(CadastroEmbalagemActivity.this)
+                            .setInfo(getResources().getString(R.string.escanear_codigo_produto))
+                            .setVibration(true)
+                            .initiateScan();
+
+                } else {
+                    Toast.makeText(CadastroEmbalagemActivity.this, "Não conseguimos achar o codigo do produto.", Toast.LENGTH_LONG).show();
+                }
+            }
+        });
+
+    } // Fim onCreate
+
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        //super.onActivityResult(requestCode, resultCode, data);
+        //IntentResult retornoEscanerCodigoBarra = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
+        ZxingOrientResult retornoEscanerCodigoBarra = ZxingOrient.parseActivityResult(requestCode, resultCode, data);
+
+        if(retornoEscanerCodigoBarra != null) {
+            // Checha se retornou algum dado
+            if(retornoEscanerCodigoBarra.getContents() == null) {
+                Log.d("SAGA", "Cancelled scan - CadastroEmbalagemActivity");
+                Toast.makeText(this, "Cancelado", Toast.LENGTH_LONG).show();
+
+            } else {
+                Log.d("SAGA", "Scanned");
+                //Toast.makeText(this, "Scanned: " + retornoEscanerCodigoBarra.getContents(), Toast.LENGTH_LONG).show();
+
+                editCodigoBarras.setText(retornoEscanerCodigoBarra.getContents());
+                // Posiciona o cursor para o final do texto
+                editCodigoBarras.setSelection(editCodigoBarras.length());
+            }
+        } else {
+            // This is important, otherwise the retornoEscanerCodigoBarra will not be passed to the fragment
+            super.onActivityResult(requestCode, resultCode, data);
+        }
     }
 
     @Override
@@ -146,6 +197,7 @@ public class CadastroEmbalagemActivity extends AppCompatActivity {
         editDescricao = (EditText) findViewById(R.id.activity_cadastro_embalagem_edit_descricao);
         textStatus = (TextView) findViewById(R.id.activity_cadastro_embalagem_text_status);
         progressBarStatus = (ProgressBar) findViewById(R.id.activity_cadastro_embalagem_progressBar_status);
+        buttonEscanearCodigoBarraProduto = (Button) findViewById(R.id.activity_cadastro_embalagem_button_escanear_codigo_barra_produto);
 
         toolbarCabecalho = (Toolbar) findViewById(R.id.activity_cadastro_embalagem_toolbar_cabecalho);
         toolbarCabecalho.setTitle(this.getResources().getString(R.string.app_name));

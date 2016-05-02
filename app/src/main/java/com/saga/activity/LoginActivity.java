@@ -218,7 +218,7 @@ public class LoginActivity extends AppCompatActivity {
                     contentValues.put("comando", 0);
                     contentValues.put("tela", "LoginActivity");
                     contentValues.put("mensagem", "O servidor retornou dados totalmente errados. Entre em contato com o administrador da T.I.");
-                    contentValues.put("dados", retorno.getExtra().toString());
+                    contentValues.put("dados", (retorno != null) ? retorno.getExtra().toString() : "");
                     // Pega os dados do usuario
 
                     contentValues.put("usuario", funcoes.getValorXml("Usuario"));

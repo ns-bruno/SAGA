@@ -13,6 +13,8 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.widget.SearchView;
+import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -51,6 +53,7 @@ public class ListauniversalFragment extends Fragment {
     private ProgressBar progressBarStatus;
     private ItemUniversalAdapter adapterListagem;
     private TextView textMensagem;
+    private EditText editPesquisarProduto;
     private String nomeAba = null;
     private Boolean pesquisando = false;
     private int idEntrada;
@@ -112,6 +115,37 @@ public class ListauniversalFragment extends Fragment {
             }
         });
 
+
+        editPesquisarProduto.setOnKeyListener(new View.OnKeyListener() {
+            @Override
+            public boolean onKey(View v, int keyCode, KeyEvent event) {
+                if (keyCode == KeyEvent.KEYCODE_ENTER && event.getAction() == KeyEvent.ACTION_DOWN) {
+                    Log.d("SAGA", "enter_key_called - ListaUniversalFragment");
+
+                    // Checa se tem alguma coisa digitada no campos
+                    if (editPesquisarProduto.getText().length() > 0) {
+
+                        // Che se eh foi digitado um codigo de barras
+                        if (editPesquisarProduto.getText().toString().length() >= 8){
+
+                            boolean apenasNumeros = true;
+
+                            for (char digito : editPesquisarProduto.getText().toString().toCharArray()) {
+                                // Checa se eh um numero
+                                if (!Character.isDigit(digito)) {
+                                    apenasNumeros = false;
+                                }
+                            }
+                            // Checa se realmente foi digitado apena numeros
+                            if (apenasNumeros){
+
+                            }
+                        }
+                    }
+                }
+                return false;
+            }
+        });
         return viewOrcamento;
     }
 
@@ -278,6 +312,7 @@ public class ListauniversalFragment extends Fragment {
         listViewListagem = (ListView) viewOrcamento.findViewById(R.id.fragment_pagina_lista_universal_list_view_listagem);
         progressBarStatus = (ProgressBar) viewOrcamento.findViewById(R.id.fragment_pagina_lista_universal_progress_bar_status_pesquisa);
         textMensagem = (TextView) viewOrcamento.findViewById(R.id.fragment_pagina_lista_universal_text_mensagem_geral);
+        editPesquisarProduto = (EditText) viewOrcamento.findViewById(R.id.fragment_pagina_lista_universal_edit_pesquisar);
     }
 
     public class LoaderLista extends AsyncTask<Void, Void, Void> {

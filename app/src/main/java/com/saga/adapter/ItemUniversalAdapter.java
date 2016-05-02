@@ -304,7 +304,11 @@ public class ItemUniversalAdapter extends BaseAdapter {
                 textAbaixoDescricaoDireita.setText("Dt. Ent.: " + funcoes.formataData(listaNotaFiscalEntrada.get(position).getDataEntrada()));
                 textBottonEsquerdo.setText((listaNotaFiscalEntrada.get(position).getClifo().getCidadeClifo() != null) ?
                                             listaNotaFiscalEntrada.get(position).getClifo().getCidadeClifo().getDescricaoCidade() : "");
-                textBottonEsquerdoDois.setText(" | " + listaNotaFiscalEntrada.get(position).getNatureza().getDescricaoNatureza());
+                if (listaNotaFiscalEntrada.get(position).getFinalidade().contains("4")){
+                    textBottonEsquerdoDois.setText(" | " + context.getResources().getString(R.string.devolucao));
+                } else {
+                    textBottonEsquerdoDois.setText(" | " + listaNotaFiscalEntrada.get(position).getNatureza().getDescricaoNatureza());
+                }
                 textBottonDireito.setText("Total: " + funcoes.arredondarValor(listaNotaFiscalEntrada.get(position).getValorTotalEntrada()));
 
                 viewTopo.setVisibility(View.INVISIBLE);
