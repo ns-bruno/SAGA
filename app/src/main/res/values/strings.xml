@@ -92,6 +92,11 @@
     <string name="escanear_edereco_locacao">Escanear o Endereço/Locação</string>
     <string name="nao_foir_informado_nenhuma_locacao">Não foi informado nenhum endereço/locação</string>
     <string name="escaneamento_cancelado">Escaneamento Cancelado</string>
+    <string name="campo_pesquisa_vazio">Campo de pesquisa vazio.</string>
+    <string name="deletar">Deletar.</string>
+    <string name="marcar_conferido">Marcar como Conferido.</string>
+    <string name="peso_bruto">Peso Bruto</string>
+    <string name="peso_liquido">Peso Liquido</string>
 
     <string-array name="tab_nota_fiscal_entrada">
         <item>Conferir Entradas</item>

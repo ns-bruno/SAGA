@@ -45,6 +45,8 @@ public class WSSisInfoWebservice {
     public static final String FUNCTION_SELECT_LISTA_ESTOQUE = "selectListaEstoque";
     public static final String FUNCTION_UPDATE_LOCACAO_ESTOQUE = "updateLocacaoEstoque";
     public static final String FUNCTION_SELECT_LISTA_LOCES = "selectListaLoces";
+    public static final String FUNCTION_UPDATE_PRODUTO = "updateNotaFiscalEntrada";
+    public static final String FUNCTION_UPDATE_NOTA_FISCAL_ENTRADA = "updateNotaFiscalEntrada";
 
 
     public WSSisInfoWebservice(Context context) {

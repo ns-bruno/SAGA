@@ -7,17 +7,23 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.github.clans.fab.FloatingActionButton;
 import com.saga.R;
 import com.saga.adapter.ItemUniversalAdapter;
+import com.saga.banco.interno.funcoesSql.ProdutoSql;
 import com.saga.beans.EmbalagemBeans;
 import com.saga.beans.ItemNotaFiscalEntradaBeans;
 import com.saga.beans.ProdutoBeans;
@@ -29,16 +35,21 @@ import com.saga.funcoes.rotinas.ProdutoRotinas;
 import java.util.ArrayList;
 import java.util.List;
 
+import me.sudar.zxingorient.ZxingOrient;
+import me.sudar.zxingorient.ZxingOrientResult;
+
 /**
  * Created by Bruno Nogueira Silva on 05/02/2016.
  */
 public class ConferenciaItemNotaEntradaActivity extends AppCompatActivity {
 
     private Toolbar toolbarCabecalho;
-    private TextView textDescricaoProduto, textCodigo, textReferencia, textCodigoBarrasProduto, textMarca, textEmbalagemPricipal, textMensagemEmbalagem;
+    private TextView textDescricaoProduto, textCodigo, textReferencia, textMarca, textEmbalagemPricipal, textMensagemEmbalagem;
     private ListView listViewListaEmbalagem;
     private FloatingActionButton floatingButtonNovaEmbalagem;
     private ProgressBar progressStatus;
+    private Button buttonEscanecarCodigoBarrasProduto;
+    private EditText editCodigoBarraProduto, editPesoBruto, editPesoLiquido;
     private int idEntrada, idItemEntrada, idProduto = -1, idEmbalagem = -1;
     public static final String KEY_ID_AEAITENT = "ID_AEAITENT";
     public static final String KEY_ID_AEAENTRA = "ID_AEAENTRA";
@@ -89,7 +100,45 @@ public class ConferenciaItemNotaEntradaActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
-    }
+
+        buttonEscanecarCodigoBarrasProduto.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                new ZxingOrient(ConferenciaItemNotaEntradaActivity.this)
+                        .setInfo(getResources().getString(R.string.escanear_codigo_produto))
+                        .setVibration(true)
+                        .setIcon(R.mipmap.ic_launcher)
+                        .initiateScan();
+
+            }
+        });
+    } // onCreate
+
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        ZxingOrientResult retornoEscanerCodigoBarra = ZxingOrient.parseActivityResult(requestCode, resultCode, data);
+
+        if(retornoEscanerCodigoBarra != null) {
+            // Checha se retornou algum dado
+            if(retornoEscanerCodigoBarra.getContents() == null) {
+                Log.d("SAGA", "Cancelled scan - ConferenciaItemNotaEntradaActivity");
+                Toast.makeText(this, "Cancelado", Toast.LENGTH_LONG).show();
+
+            } else {
+                Log.d("SAGA", "Scanned");
+                //Toast.makeText(this, "Scanned: " + retornoEscanerCodigoBarra.getContents(), Toast.LENGTH_LONG).show();
+
+                editCodigoBarraProduto.setText(retornoEscanerCodigoBarra.getContents());
+                // Posiciona o cursor para o final do texto
+                editCodigoBarraProduto.setSelection(editCodigoBarraProduto.getText().length());
+            }
+        } else {
+            // This is important, otherwise the retornoEscanerCodigoBarra will not be passed to the fragment
+            super.onActivityResult(requestCode, resultCode, data);
+        }
+    } // Fim onActivityResult
 
     private void restauraCampo() {
         toolbarCabecalho = (Toolbar) findViewById(R.id.activity_conferencia_item_nota_entrada_toolbar_cabecalho);
@@ -103,14 +152,24 @@ public class ConferenciaItemNotaEntradaActivity extends AppCompatActivity {
         textDescricaoProduto = (TextView) findViewById(R.id.activity_conferencia_item_nota_entrada_text_descricao_produto);
         textCodigo = (TextView) findViewById(R.id.activity_conferencia_item_nota_entrada_text_codigo);
         textReferencia = (TextView) findViewById(R.id.activity_conferencia_item_nota_entrada_text_referencia);
-        textCodigoBarrasProduto = (TextView) findViewById(R.id.activity_conferencia_item_nota_entrada_text_codigo_barras_produto);
         textMarca = (TextView) findViewById(R.id.activity_conferencia_item_nota_entrada_text_marca);
         textEmbalagemPricipal = (TextView) findViewById(R.id.activity_conferencia_item_nota_entrada_text_embalagem_principal);
         textMensagemEmbalagem = (TextView) findViewById(R.id.activity_conferencia_item_nota_entrada_textView_mensagem_embalagem);
         listViewListaEmbalagem = (ListView) findViewById(R.id.activity_conferencia_item_nota_entrada_list_lista_embalagem);
         floatingButtonNovaEmbalagem = (FloatingActionButton) findViewById(R.id.activity_conferencia_item_nota_entrada_floating_nova_embalagem);
         progressStatus = (ProgressBar) findViewById(R.id.activity_conferencia_item_nota_entrada_progress_status);
+        editCodigoBarraProduto = (EditText) findViewById(R.id.activity_conferencia_item_nota_entrada_edit_codigo_barra_produto);
+        editPesoBruto = (EditText) findViewById(R.id.activity_conferencia_item_nota_entrada_edit_peso_bruto);
+        editPesoLiquido = (EditText) findViewById(R.id.activity_conferencia_item_nota_entrada_edit_peso_liquido);
+        buttonEscanecarCodigoBarrasProduto = (Button) findViewById(R.id.activity_conferencia_item_nota_entrada_button_escanear_codigo_barras_produto);
     }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_activity_conferencia_item_nota_entrada, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -121,6 +180,34 @@ public class ConferenciaItemNotaEntradaActivity extends AppCompatActivity {
                 finish();
                 break;
 
+            case R.id.menu_activity_conferencia_item_nota_entrada_salvar:
+
+                if (idProduto > 0){
+
+                    // Checa se foi digitado um codigo de barra mais que 5 digitos
+                    if ( (editCodigoBarraProduto.getText().length() > 5) || (editPesoLiquido.getText().length() > 0) || (editPesoBruto.getText().length() > 0) ) {
+
+                        String sql = "UPDATE AEAPRODU SET CODIGO_BARRAS = '" + editCodigoBarraProduto.getText().toString() + "' ";
+
+                        if (editPesoLiquido.getText().length() > 0){
+                            sql += ", PESO_LIQUIDO = " + editPesoLiquido.getText();
+                        }
+
+                        if (editPesoBruto.getText().length() > 0){
+                            sql += ", PESO_BRUTO = " + editPesoBruto.getText();
+                        }
+
+                        sql += "WHERE ID_AEAPRODU = " + idProduto;
+
+                        AtualizarProdutos atualizarProdutos = new AtualizarProdutos(sql);
+                        atualizarProdutos.execute();
+
+                    } else {
+                        Toast.makeText(ConferenciaItemNotaEntradaActivity.this, "Digite algum valor válido em alguns dos campos.", Toast.LENGTH_LONG).show();
+                    }
+
+                }
+                break;
             default:
                 break;
         }
@@ -128,8 +215,8 @@ public class ConferenciaItemNotaEntradaActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+
     public class LoaderDetalhesProdutos extends AsyncTask<Void, Void, Void> {
-        String where = null;
         ProdutoBeans produto;
         // Cria uma vareavel para salvar a lista de nota fiscal de entrada
         List<ItemNotaFiscalEntradaBeans> listaItemNotaFiscalEntrada;
@@ -198,7 +285,10 @@ public class ConferenciaItemNotaEntradaActivity extends AppCompatActivity {
                 textReferencia.setText("Ref.: " + produto.getReferencia());
                 textMarca.setText(produto.getMarca().getDescricao());
                 textEmbalagemPricipal.setText("Emb.: " + produto.getUnidadeVenda().getSigla());
-                textCodigoBarrasProduto.setText("Cód. Bar. Produtos - " + produto.getCodigoBarras());
+                editCodigoBarraProduto.setText(!produto.getCodigoBarras().equalsIgnoreCase("anyType{}") ? produto.getCodigoBarras() : "");
+                editCodigoBarraProduto.setSelection(editCodigoBarraProduto.length());
+                editPesoBruto.setText((produto.getPesoBruto() > 0) ? String.valueOf(produto.getPesoBruto()) : "");
+                editPesoLiquido.setText((produto.getPesoLiquido() > 0) ? String.valueOf(produto.getPesoLiquido()) : "");
 
                 if ((listaEmbalagem != null) && (listaEmbalagem.size() > 0)){
 
@@ -235,5 +325,46 @@ public class ConferenciaItemNotaEntradaActivity extends AppCompatActivity {
             });
         }
 
+    }
+
+    public class AtualizarProdutos extends AsyncTask<Void, Void, Void> {
+
+        String sql;
+
+        public AtualizarProdutos(String sql) {
+            this.sql = sql;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            // o progressBar agora eh setado como visivel
+            progressStatus.setVisibility(View.VISIBLE);
+        }
+
+        @Override
+        protected Void doInBackground(Void... params) {
+
+            ProdutoRotinas produtoRotinas = new ProdutoRotinas(ConferenciaItemNotaEntradaActivity.this);
+
+            // Checa se atualizou com sucesso
+            if ( produtoRotinas.updateProduto(sql, progressStatus, null) ){
+
+                (ConferenciaItemNotaEntradaActivity.this).runOnUiThread(new Runnable() {
+                    public void run() {
+                        Toast.makeText(ConferenciaItemNotaEntradaActivity.this, getResources().getString(R.string.atualizado_sucesso), Toast.LENGTH_LONG).show();
+                    }
+                });
+            }
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+
+            //tirando o ProgressBar da nossa tela
+            progressStatus.setVisibility(View.GONE);
+        }
     }
 }

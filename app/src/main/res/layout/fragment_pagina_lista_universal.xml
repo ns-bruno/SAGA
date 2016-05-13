@@ -54,12 +54,26 @@
         android:padding="10dp"
         android:visibility="gone">
 
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" >
+
         <EditText
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/fragment_pagina_lista_universal_edit_pesquisar"
+            android:inputType="textCapCharacters"
             android:layout_weight="1" />
 
+            <Button
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/fragment_pagina_lista_universal_button_escanear_codigo_barras"
+                android:background="@mipmap/ic_barcode_scan"
+                android:layout_weight="8"/>
+
+        </LinearLayout>
     </android.support.v7.widget.Toolbar>
 
 </LinearLayout>

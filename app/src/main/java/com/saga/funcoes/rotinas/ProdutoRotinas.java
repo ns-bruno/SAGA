@@ -12,10 +12,12 @@ import com.saga.banco.interno.funcoesSql.ProdutoSql;
 import com.saga.beans.MarcaBeans;
 import com.saga.beans.ProdutoBeans;
 import com.saga.beans.ProdutoLojaBeans;
+import com.saga.beans.RetornoWebServiceBeans;
 import com.saga.beans.UnidadeVendaBeans;
 import com.saga.funcoes.FuncoesPersonalizadas;
 import com.saga.webservice.WSSisInfoWebservice;
 
+import org.ksoap2.serialization.PropertyInfo;
 import org.ksoap2.serialization.SoapObject;
 
 import java.util.ArrayList;
@@ -149,10 +151,10 @@ public class ProdutoRotinas extends Rotinas {
             }
 
         } catch (Exception e){
-            FuncoesPersonalizadas funcoes = new FuncoesPersonalizadas(context);
+            final FuncoesPersonalizadas funcoes = new FuncoesPersonalizadas(context);
 
             // Armazena as informacoes para para serem exibidas e enviadas
-            ContentValues contentValues = new ContentValues();
+            final ContentValues contentValues = new ContentValues();
             contentValues.put("comando", 0);
             contentValues.put("tela", "ProdutoRotinas");
             contentValues.put("mensagem", "Não conseguimos pegar a descrição do produto. \n" + funcoes.tratamentoErroBancoDados(e.getMessage()));
@@ -162,7 +164,12 @@ public class ProdutoRotinas extends Rotinas {
             contentValues.put("empresa", funcoes.getValorXml("ChaveEmpresa"));
             contentValues.put("email", funcoes.getValorXml("Email"));
 
-            funcoes.menssagem(contentValues);
+
+            ((Activity) context).runOnUiThread(new Runnable() {
+                public void run() {
+                    funcoes.menssagem(contentValues);
+                }
+            });
         }
         return produtoRetorno;
     }
@@ -321,4 +328,118 @@ public class ProdutoRotinas extends Rotinas {
         return listaProdutoLojaRetorno;
     }
 
+    /**
+     * Atualiza os dados dos produtos.
+     * Tem que ser passado uma instrucao sql ("UPDATE TABLE SET COLUMN = VALUE WHERE ID = ID").
+     *
+     * @param sql
+     * @param progressBarStatus
+     * @param textStatus
+     * @return
+     */
+    public boolean updateProduto(String sql, ProgressBar progressBarStatus, final TextView textStatus){
+
+        try{
+            if (getTipoConexao().equalsIgnoreCase("W")){
+                // Cria uma lista para salvar todas as propriedades
+                List<PropertyInfo> listaPropertyInfos = new ArrayList<PropertyInfo>();
+
+                PropertyInfo propertySql = new PropertyInfo();
+                propertySql.setName("sql");
+                propertySql.setValue(sql);
+                propertySql.setType(sql.getClass());
+                // Adiciona a propriedade na lista
+                listaPropertyInfos.add(propertySql);
+
+                if (textStatus != null){
+                    ((Activity) context).runOnUiThread(new Runnable() {
+                        public void run() {
+                            textStatus.setText(context.getResources().getString(R.string.enviando_dados_servidor_webservice));
+                        }
+                    });
+                }
+                WSSisInfoWebservice webserviceSisInfo = new WSSisInfoWebservice(context);
+                // Executa o webservice
+                final RetornoWebServiceBeans retorno = webserviceSisInfo.executarWebservice(listaPropertyInfos, WSSisInfoWebservice.FUNCTION_UPDATE_PRODUTO);
+
+                // Checa se retornou alguma coisa
+                if (retorno != null){
+
+                    if (textStatus != null){
+                        ((Activity) context).runOnUiThread(new Runnable() {
+                            public void run() {
+                                textStatus.setText(context.getResources().getString(R.string.ja_estamos_com_retorno_servidor));
+                            }
+                        });
+                    }
+                    // Checa se o retorno teve insercao com sucesso
+                    if (retorno.getCodigoRetorno() == 101){
+
+                        final ContentValues contentValues = new ContentValues();
+                        contentValues.put("comando", 2);
+                        contentValues.put("mensagem", retorno.getMensagemRetorno());
+
+                        final FuncoesPersonalizadas funcoes = new FuncoesPersonalizadas(context);
+
+                        if (textStatus != null){
+                            ((Activity) context).runOnUiThread(new Runnable() {
+                                public void run() {
+                                    textStatus.setText(retorno.getMensagemRetorno() + "\n" + retorno.getExtra().toString());
+                                    // Executa uma mensagem rapida
+                                    funcoes.menssagem(contentValues);
+                                }
+                            });
+                        }
+                        return true;
+                    } else {
+                        final FuncoesPersonalizadas funcoes = new FuncoesPersonalizadas(context);
+
+                        // Armazena as informacoes para para serem exibidas e enviadas
+                        final ContentValues contentValues = new ContentValues();
+                        contentValues.put("comando", 0);
+                        contentValues.put("tela", "EmbalagemRotina");
+                        contentValues.put("mensagem", "\n Codigo Erro: " + retorno.getCodigoRetorno() +
+                                "\n Mensagem: " + retorno.getMensagemRetorno() + "\n" + retorno.getExtra().toString());
+
+                        ((Activity) context).runOnUiThread(new Runnable() {
+                            public void run() {
+                                funcoes.menssagem(contentValues);
+                            }
+                        });
+                    }
+                }
+            } else {
+                /*ContentValues dadosEmbalagem = new ContentValues();
+                dadosEmbalagem.put("ID_AEAUNVEN", produto.getUnidadeVenda().getIdUnidadeVenda());
+                dadosEmbalagem.put("DESCRICAO", produto.getDescricaoEmbalagem());
+                dadosEmbalagem.put("MODULO", produto.getModulo());
+                dadosEmbalagem.put("DECIMAIS", produto.getDecimais());
+                dadosEmbalagem.put("ATIVO", produto.getAtivo());
+                dadosEmbalagem.put("CODIGO_BARRAS", produto.getCodigoBarras());
+                dadosEmbalagem.put("REFERENCIA", produto.getReferencia());*/
+            }
+
+        } catch (Exception e){
+            final FuncoesPersonalizadas funcoes = new FuncoesPersonalizadas(context);
+
+            // Armazena as informacoes para para serem exibidas e enviadas
+            final ContentValues contentValues = new ContentValues();
+            contentValues.put("comando", 0);
+            contentValues.put("tela", "EmbalagemRotina");
+            contentValues.put("mensagem", "Erro ao atualizar o codigo de barras do produto. \n");
+            contentValues.put("dados", e.toString());
+            // Pega os dados do usuario
+            contentValues.put("usuario", funcoes.getValorXml("Usuario"));
+            contentValues.put("empresa", funcoes.getValorXml("ChaveEmpresa"));
+            contentValues.put("email", funcoes.getValorXml("Email"));
+
+            ((Activity) context).runOnUiThread(new Runnable() {
+                public void run() {
+                    funcoes.menssagem(contentValues);
+                }
+            });
+        }
+
+            return false;
+    }
 } // Fim da classe

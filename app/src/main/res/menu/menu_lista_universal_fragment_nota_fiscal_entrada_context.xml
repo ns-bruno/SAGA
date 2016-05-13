@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/menu_lista_universal_fragment_nota_fiscal_entrada_context_marcar_conferido"
+        android:orderInCategory="102"
+        android:icon="@mipmap/ic_check"
+        android:title="@string/marcar_conferido"
+        app:showAsAction="always" />
+
+</menu>

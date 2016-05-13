@@ -216,6 +216,7 @@ public class LocacaoEnderecoActivity extends AppCompatActivity {
                 new ZxingOrient(LocacaoEnderecoActivity.this)
                         .setInfo(getResources().getString(R.string.escanear_edereco_locacao))
                         .setVibration(true)
+                        .setIcon(R.mipmap.ic_launcher)
                         .initiateScan();
 
             }
@@ -232,6 +233,7 @@ public class LocacaoEnderecoActivity extends AppCompatActivity {
                     new ZxingOrient(LocacaoEnderecoActivity.this)
                             .setInfo(getResources().getString(R.string.escanear_edereco_locacao))
                             .setVibration(true)
+                            .setIcon(R.mipmap.ic_launcher)
                             .initiateScan();
 
                 } else {

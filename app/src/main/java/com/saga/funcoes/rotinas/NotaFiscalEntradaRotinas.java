@@ -5,7 +5,9 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 
+import com.saga.R;
 import com.saga.banco.interno.funcoesSql.ItemNotaFiscalEntradaSql;
 import com.saga.banco.interno.funcoesSql.NotaFiscalEntradaSql;
 import com.saga.banco.interno.funcoesSql.ProdutoSql;
@@ -22,6 +24,7 @@ import com.saga.beans.NaturezaBeans;
 import com.saga.beans.NotaFiscalEntradaBeans;
 import com.saga.beans.ProdutoBeans;
 import com.saga.beans.ProdutoLojaBeans;
+import com.saga.beans.RetornoWebServiceBeans;
 import com.saga.beans.SubGrupoProdutoBeans;
 import com.saga.beans.TipoGradeBeans;
 import com.saga.beans.UnidadeVendaBeans;
@@ -887,7 +890,8 @@ public class NotaFiscalEntradaRotinas extends Rotinas {
         try{
             String sql =
                     "SELECT AEAPRODU.ID_AEAPRODU, AEAPRODU.CODIGO, AEAPRODU.CODIGO_ESTRUTURAL, AEAPRODU.CODIGO_BARRAS, "+
-                            "AEAPRODU.GUID, AEAPRODU.DESCRICAO, AEAPRODU.DESCRICAO_AUXILIAR, AEAPRODU.REFERENCIA, AEAMARCA.ID_AEAMARCA, "+
+                            "AEAPRODU.GUID, AEAPRODU.DESCRICAO, AEAPRODU.DESCRICAO_AUXILIAR, AEAPRODU.REFERENCIA, AEAPRODU.PESO_BRUTO, AEAPRODU.PESO_LIQUIDO, " +
+                            "AEAMARCA.ID_AEAMARCA, "+
                             "AEAMARCA.ID_AEAMARCA, AEAMARCA.DESCRICAO AS DESCRICAO_MARCA, "+
                             "AEAUNVEN.ID_AEAUNVEN, AEAUNVEN.SIGLA, AEAUNVEN.DESCRICAO_SINGULAR, AEAUNVEN.DECIMAIS "+
                             "FROM AEAPRODU "+
@@ -922,6 +926,8 @@ public class NotaFiscalEntradaRotinas extends Rotinas {
                     produtoRetorno.setDescricaoProduto(objetoProduto.getProperty("descricaoProduto").toString());
                     produtoRetorno.setDescricaoAuxiliar((objetoProduto.hasProperty("descricaoAuxiliar")) ? objetoProduto.getProperty("descricaoAuxiliar").toString() : "");
                     produtoRetorno.setReferencia((objetoProduto.hasProperty("referencia")) ? objetoProduto.getProperty("referencia").toString() : "");
+                    produtoRetorno.setPesoBruto((objetoProduto.hasProperty("pesoBruto")) ? Double.parseDouble(objetoProduto.getProperty("pesoBruto").toString()) : 0);
+                    produtoRetorno.setPesoLiquido((objetoProduto.hasProperty("pesoLiquido")) ? Double.parseDouble(objetoProduto.getProperty("pesoLiquido").toString()) : 0);
 
                     MarcaBeans marca= new MarcaBeans();
                     SoapObject objetoMarca = (SoapObject) objetoProduto.getProperty("marca");
@@ -968,5 +974,120 @@ public class NotaFiscalEntradaRotinas extends Rotinas {
             funcoes.menssagem(contentValues);
         }
         return produtoRetorno;
+    }
+
+    /**
+     * Atualiza os dados da nota fiscal de entrada.
+     * Tem que ser passado uma instrucao sql ("UPDATE TABLE SET COLUMN = VALUE WHERE ID = ID").
+     *
+     * @param sql
+     * @param progressBarStatus
+     * @param textStatus
+     * @return
+     */
+    public boolean updateNotaFiscalEntrada(String sql, ProgressBar progressBarStatus, final TextView textStatus){
+
+        try{
+            if (getTipoConexao().equalsIgnoreCase("W")){
+                // Cria uma lista para salvar todas as propriedades
+                List<PropertyInfo> listaPropertyInfos = new ArrayList<PropertyInfo>();
+
+                PropertyInfo propertySql = new PropertyInfo();
+                propertySql.setName("sql");
+                propertySql.setValue(sql);
+                propertySql.setType(sql.getClass());
+                // Adiciona a propriedade na lista
+                listaPropertyInfos.add(propertySql);
+
+                if (textStatus != null){
+                    ((Activity) context).runOnUiThread(new Runnable() {
+                        public void run() {
+                            textStatus.setText(context.getResources().getString(R.string.enviando_dados_servidor_webservice));
+                        }
+                    });
+                }
+                WSSisInfoWebservice webserviceSisInfo = new WSSisInfoWebservice(context);
+                // Executa o webservice
+                final RetornoWebServiceBeans retorno = webserviceSisInfo.executarWebservice(listaPropertyInfos, WSSisInfoWebservice.FUNCTION_UPDATE_NOTA_FISCAL_ENTRADA);
+
+                // Checa se retornou alguma coisa
+                if (retorno != null){
+
+                    if (textStatus != null){
+                        ((Activity) context).runOnUiThread(new Runnable() {
+                            public void run() {
+                                textStatus.setText(context.getResources().getString(R.string.ja_estamos_com_retorno_servidor));
+                            }
+                        });
+                    }
+                    // Checa se o retorno teve insercao com sucesso
+                    if (retorno.getCodigoRetorno() == 101){
+
+                        final ContentValues contentValues = new ContentValues();
+                        contentValues.put("comando", 2);
+                        contentValues.put("mensagem", retorno.getMensagemRetorno());
+
+                        final FuncoesPersonalizadas funcoes = new FuncoesPersonalizadas(context);
+
+                        if (textStatus != null){
+                            ((Activity) context).runOnUiThread(new Runnable() {
+                                public void run() {
+                                    textStatus.setText(retorno.getMensagemRetorno() + "\n" + retorno.getExtra().toString());
+                                    // Executa uma mensagem rapida
+                                    funcoes.menssagem(contentValues);
+                                }
+                            });
+                        }
+                        return true;
+                    } else {
+                        final FuncoesPersonalizadas funcoes = new FuncoesPersonalizadas(context);
+
+                        // Armazena as informacoes para para serem exibidas e enviadas
+                        final ContentValues contentValues = new ContentValues();
+                        contentValues.put("comando", 0);
+                        contentValues.put("tela", "NotaFiscalEntradaRotinas");
+                        contentValues.put("mensagem", "\n Codigo Erro: " + retorno.getCodigoRetorno() +
+                                "\n Mensagem: " + retorno.getMensagemRetorno() + "\n" + retorno.getExtra().toString());
+
+                        ((Activity) context).runOnUiThread(new Runnable() {
+                            public void run() {
+                                funcoes.menssagem(contentValues);
+                            }
+                        });
+                    }
+                }
+            } else {
+                /*ContentValues dadosEmbalagem = new ContentValues();
+                dadosEmbalagem.put("ID_AEAUNVEN", produto.getUnidadeVenda().getIdUnidadeVenda());
+                dadosEmbalagem.put("DESCRICAO", produto.getDescricaoEmbalagem());
+                dadosEmbalagem.put("MODULO", produto.getModulo());
+                dadosEmbalagem.put("DECIMAIS", produto.getDecimais());
+                dadosEmbalagem.put("ATIVO", produto.getAtivo());
+                dadosEmbalagem.put("CODIGO_BARRAS", produto.getCodigoBarras());
+                dadosEmbalagem.put("REFERENCIA", produto.getReferencia());*/
+            }
+
+        } catch (Exception e){
+            final FuncoesPersonalizadas funcoes = new FuncoesPersonalizadas(context);
+
+            // Armazena as informacoes para para serem exibidas e enviadas
+            final ContentValues contentValues = new ContentValues();
+            contentValues.put("comando", 0);
+            contentValues.put("tela", "EmbalagemRotina");
+            contentValues.put("mensagem", "Erro ao atualizar o codigo de barras do produto. \n");
+            contentValues.put("dados", e.toString());
+            // Pega os dados do usuario
+            contentValues.put("usuario", funcoes.getValorXml("Usuario"));
+            contentValues.put("empresa", funcoes.getValorXml("ChaveEmpresa"));
+            contentValues.put("email", funcoes.getValorXml("Email"));
+
+            ((Activity) context).runOnUiThread(new Runnable() {
+                public void run() {
+                    funcoes.menssagem(contentValues);
+                }
+            });
+        }
+
+        return false;
     }
 }

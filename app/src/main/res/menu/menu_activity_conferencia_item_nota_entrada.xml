@@ -10,4 +10,11 @@
         app:showAsAction="always">
     </item>
 
+    <item
+        android:id="@+id/menu_activity_conferencia_item_nota_entrada_salvar"
+        android:orderInCategory="101"
+        android:icon="@mipmap/ic_content_save"
+        android:title="@string/salvar"
+        app:showAsAction="always" />
+
 </menu>

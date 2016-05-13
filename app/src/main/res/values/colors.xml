@@ -7,6 +7,7 @@
     <color name="preto" type="color">#000000</color>
     <color name="azul_escuro" type="color">#FF0099CC</color>
     <color name="cinza_escuro" type="color">#727272</color>
+    <color name="cinza_claro" type="color">#E0E0E0</color>
     <color name="amarelo" type="color">#FF8800</color>
     <item name="vermelho" type="color">#FFFF4444</item>
     <item name="vermelho_escuro" type="color">#FFCC0000</item>

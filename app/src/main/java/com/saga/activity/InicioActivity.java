@@ -164,6 +164,12 @@ public class InicioActivity extends AppCompatActivity {
                                 return true;
                             //break;
 
+                            case 2:
+                                // Abre a tela de produtos
+                                Intent intentProduto = new Intent(InicioActivity.this, ListaProdutoActivity.class);
+                                startActivity(intentProduto);
+                                return true;
+
                             case 5:
                                 // Abre a tela de notas fiscais de entradas
                                 Intent intent = new Intent(InicioActivity.this, ListaUniversalActivity.class);

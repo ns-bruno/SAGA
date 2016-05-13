@@ -12,8 +12,11 @@ import android.provider.SearchRecentSuggestions;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.MenuItemCompat;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SearchView;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.ActionMode;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -22,11 +25,14 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.AbsListView;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.saga.R;
@@ -35,12 +41,16 @@ import com.saga.activity.ListaUniversalActivity;
 import com.saga.adapter.ItemUniversalAdapter;
 import com.saga.beans.ItemNotaFiscalEntradaBeans;
 import com.saga.beans.NotaFiscalEntradaBeans;
+import com.saga.beans.RomaneioBeans;
 import com.saga.funcoes.FuncoesPersonalizadas;
 import com.saga.funcoes.rotinas.NotaFiscalEntradaRotinas;
 import com.saga.provider.SearchableProvider;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import me.sudar.zxingorient.ZxingOrient;
+import me.sudar.zxingorient.ZxingOrientResult;
 
 /**
  * Created by Bruno Nogueira Silva on 21/01/2016.
@@ -53,10 +63,15 @@ public class ListauniversalFragment extends Fragment {
     private ProgressBar progressBarStatus;
     private ItemUniversalAdapter adapterListagem;
     private TextView textMensagem;
-    private EditText editPesquisarProduto;
+    private EditText editPesquisar;
+    private Button buttonEscanerCodigoBarras;
+    private Toolbar toolbarRodape;
     private String nomeAba = null;
     private Boolean pesquisando = false;
-    private int idEntrada;
+    private int idEntrada, idRomaneio;
+    private int mPreviousVisibleItem;
+    private List<NotaFiscalEntradaBeans> listaNotaFiscalEntradaSelecionado;
+    private int totalItemSelecionado = 0;
 
     @Nullable
     @Override
@@ -77,7 +92,64 @@ public class ListauniversalFragment extends Fragment {
         if(parametro != null){
             tipoTela = parametro.getInt(ListaUniversalActivity.KEY_TIPO_TELA);
             nomeAba = parametro.getString(ListaUniversalActivity.KEY_NOME_ABA);
-            idEntrada = (parametro.get("ID_AEAENTRA") != null) ? parametro.getInt("ID_AEAENTRA") : -1; 
+            idEntrada = (parametro.get("ID_AEAENTRA") != null) ? parametro.getInt("ID_AEAENTRA") : -1;
+            idRomaneio = (parametro.get("ID_AEAROMAN") != null) ? parametro.getInt("ID_AEAROMAN") : -1;
+        }
+
+        // Checa qual eh o tipo de tela
+        if (tipoTela == ListaUniversalActivity.TELA_NOTA_FISCAL_ENTRADA){
+
+            // Mosta a tollbar na tela de lista de nota
+            toolbarRodape.setVisibility(View.VISIBLE);
+
+            if (pesquisando == false) {
+                // informa que ja esta sendo pesquisado alguma coisa
+                pesquisando = true;
+                LoaderLista carregarLista = new LoaderLista(null, null);
+                carregarLista.execute();
+            }
+
+            // Checa se eh uma tela de item de nota fiscal de entrada
+        } else if (tipoTela == ListaUniversalActivity.TELA_ITEM_NOTA_FISCAL_ENTRADA){
+
+            // Checa se tem algum id de entrada relacionado
+            if (idEntrada > 0) {
+
+                if (pesquisando == false) {
+                    // informa que ja esta sendo pesquisado alguma coisa
+                    pesquisando = true;
+
+                    ContentValues paramentros = new ContentValues();
+                    // Pega o id da entrada
+                    paramentros.put("ID_AEAENTRA", idEntrada);
+
+                    LoaderLista carregarLista = new LoaderLista(null, paramentros);
+                    carregarLista.execute();
+                }
+
+            } else {
+                // Armazena as informacoes para para serem exibidas e enviadas
+                ContentValues contentValues = new ContentValues();
+                contentValues.put("comando", 0);
+                contentValues.put("tela", "ListaUniversalFragment");
+                contentValues.put("mensagem", "Não foi passado o ID da Entrada. \n");
+                contentValues.put("dados", idEntrada + " - " + nomeAba + " - " + tipoTela);
+                // Pega os dados do usuario
+                FuncoesPersonalizadas funcoes = new FuncoesPersonalizadas(getContext());
+                contentValues.put("usuario", funcoes.getValorXml("Usuario"));
+                contentValues.put("empresa", funcoes.getValorXml("ChaveEmpresa"));
+                contentValues.put("email", funcoes.getValorXml("Email"));
+                // Exibe a mensagem
+                funcoes.menssagem(contentValues);
+            }
+        } else if (tipoTela == ListaUniversalActivity.TELA_ROMANEIO){
+
+            if (pesquisando == false){
+                // informa que ja esta sendo pesquisado alguma coisa
+                pesquisando = true;
+                LoaderLista carregarLista = new LoaderLista(null, null);
+                carregarLista.execute();
+            }
         }
 
         listViewListagem.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -115,37 +187,194 @@ public class ListauniversalFragment extends Fragment {
             }
         });
 
+        listViewListagem.setMultiChoiceModeListener(new AbsListView.MultiChoiceModeListener() {
+            @Override
+            public void onItemCheckedStateChanged(ActionMode mode, int position, long id, boolean checked) {
 
-        editPesquisarProduto.setOnKeyListener(new View.OnKeyListener() {
+                // Checa se o tipo de tela eh a lista de nota fiscal
+                if (tipoTela == ListaUniversalActivity.TELA_NOTA_FISCAL_ENTRADA) {
+
+                    // Checa se a lista de selecionado eh nula
+                    if (listaNotaFiscalEntradaSelecionado == null) {
+                        listaNotaFiscalEntradaSelecionado = new ArrayList<NotaFiscalEntradaBeans>();
+                    }
+                }
+                // Checa se o comando eh de selecao ou descelecao
+                if (checked) {
+                    // Incrementa o totalizador
+                    totalItemSelecionado = totalItemSelecionado + 1;
+
+                    // Checa se o tipo de tela eh a lista de nota fiscal
+                    if (tipoTela == ListaUniversalActivity.TELA_NOTA_FISCAL_ENTRADA) {
+
+                        listaNotaFiscalEntradaSelecionado.add(adapterListagem.getListaNotaFiscalEntrada().get(position));
+                        // Mar o adapter para mudar a cor do fundo
+                        adapterListagem.getListaNotaFiscalEntrada().get(position).setTagSelectContext(true);
+                    }
+                    adapterListagem.notifyDataSetChanged();
+                } else {
+                    int i = 0;
+                    // Checa se o tipo de tela eh a lista de nota fiscal
+                    if (tipoTela == ListaUniversalActivity.TELA_NOTA_FISCAL_ENTRADA) {
+
+                        // Passa por todos os selecionados
+                        while (i < listaNotaFiscalEntradaSelecionado.size()) {
+
+                            // Checar se a posicao desmarcada esta na lista
+                            if (listaNotaFiscalEntradaSelecionado.get(i).getIdNotaFiscalEntrada() == adapterListagem.getListaNotaFiscalEntrada().get(position).getIdNotaFiscalEntrada()) {
+                                // Remove a posicao da lista de selecao
+                                listaNotaFiscalEntradaSelecionado.remove(i);
+                                // Diminui o total de itens selecionados
+                                totalItemSelecionado = totalItemSelecionado - 1;
+
+                                // Mar o adapter para mudar a cor do fundo
+                                adapterListagem.getListaNotaFiscalEntrada().get(position).setTagSelectContext(false);
+                                adapterListagem.notifyDataSetChanged();
+                            }
+                            // Incrementa a variavel
+                            i++;
+                        }
+                    }
+                }
+                // Checa se tem mais de um item selecionados
+                if (totalItemSelecionado > 1) {
+                    // Muda o titulo do menu de contexto quando seleciona os itens
+                    mode.setTitle(totalItemSelecionado + " Selecionados");
+                } else {
+                    // Muda o titulo do menu de contexto quando seleciona os itens
+                    mode.setTitle(totalItemSelecionado + " Selecionado");
+                }
+                if (totalItemSelecionado == 0) {
+
+                    onDestroyActionMode(mode);
+                }
+            }
+
+            @Override
+            public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+                MenuInflater menuContextual = mode.getMenuInflater();
+
+                if (tipoTela == ListaUniversalActivity.TELA_NOTA_FISCAL_ENTRADA) {
+                    menuContextual.inflate(R.menu.menu_lista_universal_fragment_nota_fiscal_entrada_context, menu);
+                }
+                // Esconde a toolbar
+                toolbarRodape.setVisibility(View.GONE);
+                ((AppCompatActivity) getActivity()).getSupportActionBar().hide();
+                return true;
+            }
+
+            @Override
+            public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+                return false;
+            }
+
+            @Override
+            public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+
+                switch (item.getItemId()) {
+
+                    case R.id.menu_lista_universal_fragment_nota_fiscal_entrada_context_marcar_conferido:
+
+                        // Passa por todos os itens selecionados
+                        for (int i = 0; i < listaNotaFiscalEntradaSelecionado.size(); i++) {
+
+                            String sql = "UPDATE AEAENTRA SET SITUACAO = 2 WHERE ID_AEAENTRA = " + listaNotaFiscalEntradaSelecionado.get(i).getIdNotaFiscalEntrada();
+
+                            AtualizarNotaFiscalEntrada atualizarNotaFiscalEntrada = new AtualizarNotaFiscalEntrada(sql);
+                            atualizarNotaFiscalEntrada.execute();
+                        }
+                        onDestroyActionMode(mode);
+                        break;
+
+                    default:
+                        break;
+                }
+
+                return false;
+            }
+
+            @Override
+            public void onDestroyActionMode(ActionMode mode) {
+
+                // Passa por tota a lista de orcamento/pedido
+                for (int i = 0; i < adapterListagem.getListaNotaFiscalEntrada().size(); i++) {
+                    // Mar o adapter para mudar a cor do fundo
+                    adapterListagem.getListaNotaFiscalEntrada().get(i).setTagSelectContext(false);
+                }
+                adapterListagem.notifyDataSetChanged();
+                listaNotaFiscalEntradaSelecionado = null;
+                totalItemSelecionado = 0;
+
+                toolbarRodape.setVisibility(View.VISIBLE);
+                ((AppCompatActivity) getActivity()).getSupportActionBar().show();
+            }
+        });
+
+        listViewListagem.setOnScrollListener(new AbsListView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(AbsListView view, int scrollState) {
+
+            }
+
+            @Override
+            public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+
+                // Checa se eh a tela de lista de nota fiscal
+                if (tipoTela == ListaUniversalActivity.TELA_NOTA_FISCAL_ENTRADA) {
+
+                    // Funcao para ocultar o float button quando rolar a lista de orcamento/pedido
+                    if (firstVisibleItem > mPreviousVisibleItem) {
+                        //toolbarRodape.animate().translationY(-toolbarRodape.getBottom()).setInterpolator(new AccelerateInterpolator()).start();
+                        toolbarRodape.setVisibility(View.GONE);
+
+                    } else if (firstVisibleItem < mPreviousVisibleItem) {
+                        //toolbarRodape.animate().translationY(0).setInterpolator(new DecelerateInterpolator()).start();
+                        toolbarRodape.setVisibility(View.VISIBLE);
+                    }
+                    mPreviousVisibleItem = firstVisibleItem;
+                }
+            }
+        });
+
+
+        editPesquisar.setOnKeyListener(new View.OnKeyListener() {
             @Override
             public boolean onKey(View v, int keyCode, KeyEvent event) {
+                // Checa se foi precionado a tecla enter
                 if (keyCode == KeyEvent.KEYCODE_ENTER && event.getAction() == KeyEvent.ACTION_DOWN) {
                     Log.d("SAGA", "enter_key_called - ListaUniversalFragment");
 
                     // Checa se tem alguma coisa digitada no campos
-                    if (editPesquisarProduto.getText().length() > 0) {
+                    if (editPesquisar.getText().length() > 0) {
 
-                        // Che se eh foi digitado um codigo de barras
-                        if (editPesquisarProduto.getText().toString().length() >= 8){
+                        // Executa o comando de pesquisa pela digitacao do texto no rodape
+                        pesquisarNotaEntrada();
 
-                            boolean apenasNumeros = true;
-
-                            for (char digito : editPesquisarProduto.getText().toString().toCharArray()) {
-                                // Checa se eh um numero
-                                if (!Character.isDigit(digito)) {
-                                    apenasNumeros = false;
-                                }
-                            }
-                            // Checa se realmente foi digitado apena numeros
-                            if (apenasNumeros){
-
-                            }
-                        }
+                    } else {
+                        Toast.makeText(getContext(), getContext().getResources().getString(R.string.campo_pesquisa_vazio), Toast.LENGTH_LONG).show();
                     }
                 }
                 return false;
             }
         });
+
+        buttonEscanerCodigoBarras.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                new ZxingOrient(getActivity())
+                        .setInfo(getResources().getString(R.string.escanear_codigo_produto))
+                        .setVibration(true)
+                        .setIcon(R.mipmap.ic_launcher)
+                        .initiateScan();
+
+            }
+        });
+
+        // Fecha o teclado virtual
+        FuncoesPersonalizadas funcoes = new FuncoesPersonalizadas(getContext());
+        funcoes.fecharTecladoVirtual(viewOrcamento);
+
         return viewOrcamento;
     }
 
@@ -153,49 +382,35 @@ public class ListauniversalFragment extends Fragment {
     public void onResume() {
         super.onResume();
 
-        // Checa qual eh o tipo de tela
-        if (tipoTela == ListaUniversalActivity.TELA_NOTA_FISCAL_ENTRADA){
 
-            if (pesquisando == false) {
-                // informa que ja esta sendo pesquisado alguma coisa
-                pesquisando = true;
-                LoaderLista carregarLista = new LoaderLista(null, null);
-                carregarLista.execute();
-            }
+    }
 
-        // Checa se eh uma tela de item de nota fiscal de entrada
-        } else if (tipoTela == ListaUniversalActivity.TELA_ITEM_NOTA_FISCAL_ENTRADA){
-            
-            // Checa se tem algum id de entrada relacionado
-            if (idEntrada > 0) {
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        //super.onActivityResult(requestCode, resultCode, data);
+        ZxingOrientResult retornoEscanerCodigoBarra = ZxingOrient.parseActivityResult(requestCode, resultCode, data);
 
-                if (pesquisando == false) {
-                    // informa que ja esta sendo pesquisado alguma coisa
-                    pesquisando = true;
+        if(retornoEscanerCodigoBarra != null) {
+            // Checha se retornou algum dado
+            if(retornoEscanerCodigoBarra.getContents() == null) {
+                Log.d("SAGA", "Cancelled scan - ListaUniversalFragment");
+                Toast.makeText(getContext(), "Cancelado", Toast.LENGTH_LONG).show();
 
-                    ContentValues paramentros = new ContentValues();
-                    // Pega o id da entrada
-                    paramentros.put("ID_AEAENTRA", idEntrada);
-
-                    LoaderLista carregarLista = new LoaderLista(null, paramentros);
-                    carregarLista.execute();
-                }
-            
             } else {
-                // Armazena as informacoes para para serem exibidas e enviadas
-                ContentValues contentValues = new ContentValues();
-                contentValues.put("comando", 0);
-                contentValues.put("tela", "ListaUniversalFragment");
-                contentValues.put("mensagem", "Não foi passado o ID da Entrada. \n");
-                contentValues.put("dados", idEntrada + " - " + nomeAba + " - " + tipoTela);
-                // Pega os dados do usuario
-                FuncoesPersonalizadas funcoes = new FuncoesPersonalizadas(getContext());
-                contentValues.put("usuario", funcoes.getValorXml("Usuario"));
-                contentValues.put("empresa", funcoes.getValorXml("ChaveEmpresa"));
-                contentValues.put("email", funcoes.getValorXml("Email"));
-                // Exibe a mensagem
-                funcoes.menssagem(contentValues);
+                Log.d("SAGA", "Scanned - ListaUniversalFragment");
+                //Toast.makeText(this, "Scanned: " + retornoEscanerCodigoBarra.getContents(), Toast.LENGTH_LONG).show();
+
+                editPesquisar.setText(retornoEscanerCodigoBarra.getContents());
+                // Posiciona o cursor para o final do texto
+                editPesquisar.setSelection(editPesquisar.length());
+
+                // Executa o comando de pesquisa pela digitacao do texto no rodape
+                pesquisarNotaEntrada();
+
             }
+        } else {
+            // This is important, otherwise the retornoEscanerCodigoBarra will not be passed to the fragment
+            super.onActivityResult(requestCode, resultCode, data);
         }
     }
 
@@ -250,7 +465,7 @@ public class ListauniversalFragment extends Fragment {
                                     + "(AEAENTRA.CHV_NFE LIKE '%" + query + "%') OR "
                                     + "(CFACLIFO.NOME_FANTASIA LIKE '%" + query + "%') OR "
                                     + "(CFACLIFO.NOME_RAZAO LIKE '%" + query + "%') OR "
-                                    + "(CFACLIFO.CPF_CNPJ LIKE '%" + query + "%') OR "
+                                    + "(CFACLIFO.CPF_CGC LIKE '%" + query + "%') OR "
                                     + "(AEANATUR.DESCRICAO LIKE '%" + query + "%') OR "
                                     + "(CFACLIFO.CODIGO_FOR LIKE '%" + query + "%') )";
 
@@ -260,17 +475,17 @@ public class ListauniversalFragment extends Fragment {
                             LoaderLista loaderListaAsync = new LoaderLista(where, null);
                             loaderListaAsync.execute();
 
-                        } else if (tipoTela == ListaUniversalActivity.TELA_ITEM_NOTA_FISCAL_ENTRADA){
+                        } else if (tipoTela == ListaUniversalActivity.TELA_ITEM_NOTA_FISCAL_ENTRADA) {
 
-                            String where =  "( (AEAITENT.ID_AEAENTRA LIKE '%" + query + "%') OR "
-                                            + "(AEAITENT.DT_ENTRADA LIKE '%" + query + "%') OR "
-                                            + "(AEAITENT.OBS LIKE '%" + query + "%') OR "
-                                            + "(AEAITENT.SEQUENCIA LIKE '%" + query + "%') OR "
-                                            + "(AEAPRODU.DESCRICAO LIKE '%" + query + "%') OR "
-                                            + "(AEAMARCA.DESCRICAO LIKE '%" + query + "%') OR "
-                                            + "(AEAUNVEN_PRODU.DESCRICAO_SINGULAR LIKE '%" + query + "%') OR "
-                                            + "(AEAUNVEN_PRODU.SIGLA LIKE '%" + query + "%') OR "
-                                            + "(AEACODOM.DESCRICAO LIKE '%" + query + "%') )";
+                            String where = "( (AEAITENT.ID_AEAENTRA LIKE '%" + query + "%') OR "
+                                    + "(AEAITENT.DT_ENTRADA LIKE '%" + query + "%') OR "
+                                    + "(AEAITENT.OBS LIKE '%" + query + "%') OR "
+                                    + "(AEAITENT.SEQUENCIA LIKE '%" + query + "%') OR "
+                                    + "(AEAPRODU.DESCRICAO LIKE '%" + query + "%') OR "
+                                    + "(AEAMARCA.DESCRICAO LIKE '%" + query + "%') OR "
+                                    + "(AEAUNVEN_PRODU.DESCRICAO_SINGULAR LIKE '%" + query + "%') OR "
+                                    + "(AEAUNVEN_PRODU.SIGLA LIKE '%" + query + "%') OR "
+                                    + "(AEACODOM.DESCRICAO LIKE '%" + query + "%') )";
 
                             // Lima o listView
                             listViewListagem.setAdapter(null);
@@ -310,10 +525,61 @@ public class ListauniversalFragment extends Fragment {
 
     private void recuperarCampos(){
         listViewListagem = (ListView) viewOrcamento.findViewById(R.id.fragment_pagina_lista_universal_list_view_listagem);
+        listViewListagem.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
         progressBarStatus = (ProgressBar) viewOrcamento.findViewById(R.id.fragment_pagina_lista_universal_progress_bar_status_pesquisa);
         textMensagem = (TextView) viewOrcamento.findViewById(R.id.fragment_pagina_lista_universal_text_mensagem_geral);
-        editPesquisarProduto = (EditText) viewOrcamento.findViewById(R.id.fragment_pagina_lista_universal_edit_pesquisar);
+        editPesquisar = (EditText) viewOrcamento.findViewById(R.id.fragment_pagina_lista_universal_edit_pesquisar);
+        buttonEscanerCodigoBarras = (Button) viewOrcamento.findViewById(R.id.fragment_pagina_lista_universal_button_escanear_codigo_barras);
+        toolbarRodape = (Toolbar) viewOrcamento.findViewById(R.id.fragment_pagina_lista_universal_toolbar_rodape);
     }
+
+
+    private void pesquisarNotaEntrada(){
+
+        String where = "";
+        // Crio uma vareavel para saber se o que foi digitado eh apenas numeros
+        boolean apenasNumeros = true;
+
+        // Passa por todos os caracter checando se eh apenas numero
+        for (char digito : editPesquisar.getText().toString().toCharArray()) {
+            // Checa se eh um numero
+            if (!Character.isDigit(digito)) {
+                apenasNumeros = false;
+                break;
+            }
+        }
+
+        // Checa se o tipo de tela eh a lista de nota de entrada
+        if (tipoTela == ListaUniversalActivity.TELA_NOTA_FISCAL_ENTRADA) {
+
+            // checa se retornou apenas numero
+            if (apenasNumeros) {
+
+                // Checa a quantidade de digito retornado, se eh uma chave nfe
+                if (editPesquisar.getText().length() == 44) {
+                    where += " (AEAENTRA.CHV_NFE = " + editPesquisar.getText() + ") ";
+
+                } else {
+                    where += " (AEAENTRA.NUMERO = " + editPesquisar.getText() + ") OR ( AEAENTRA.ID_AEAENTRA = " + editPesquisar.getText() + ") ";
+                }
+
+            } else {
+                where += " (CFACLIFO.NOME_RAZAO LIKE '%" + editPesquisar.getText() + "%') OR (CFACLIFO.NOME_FANTASIA LIKE '%" + editPesquisar.getText() + "%') " +
+                        " OR (AEAENTRA.OBS LIKE '%" + editPesquisar.getText() + "%') ";
+            }
+            // Seca se nao esta pesquisando
+            if (pesquisando == false) {
+                // Marca que esta pesquisando
+                pesquisando = true;
+
+                // Executa o preenchimento da lista
+                LoaderLista loaderLista = new LoaderLista(where, null);
+                loaderLista.execute();
+            }
+
+        }
+    }
+
 
     public class LoaderLista extends AsyncTask<Void, Void, Void> {
         ContentValues parametros;
@@ -321,12 +587,14 @@ public class ListauniversalFragment extends Fragment {
         // Cria uma vareavel para salvar a lista de nota fiscal de entrada
         List<NotaFiscalEntradaBeans> listaNotaFiscalEntrada;
         List<ItemNotaFiscalEntradaBeans> listaItemNotaFiscalEntrada;
+        List<RomaneioBeans> listaRomaneio;
 
         public LoaderLista(String where, ContentValues parametros) {
-            this.where = where;
+            this.where = (where != null) ? where.toUpperCase() : null;
             this.parametros = parametros;
             listaNotaFiscalEntrada = new ArrayList<NotaFiscalEntradaBeans>();
             listaItemNotaFiscalEntrada = new ArrayList<ItemNotaFiscalEntradaBeans>();
+            listaRomaneio = new ArrayList<RomaneioBeans>();
         }
 
         // Aqui eh o que acontece antes da tarefa principal ser executado
@@ -339,12 +607,19 @@ public class ListauniversalFragment extends Fragment {
         @Override
         protected Void doInBackground(Void... params) {
             try {
-                NotaFiscalEntradaRotinas notaFiscalEntradaRotinas = new NotaFiscalEntradaRotinas(getContext());
+
 
                 FuncoesPersonalizadas funcoes = new FuncoesPersonalizadas(getContext());
 
-                // Indica para a rotina que o tipo de conexao eh webservice
-                notaFiscalEntradaRotinas.setTipoConexao((!funcoes.getValorXml("TipoConexao").equalsIgnoreCase(funcoes.NAO_ENCONTRADO)) ? funcoes.getValorXml("TipoConexao"): "I");
+                NotaFiscalEntradaRotinas notaFiscalEntradaRotinas = null;
+
+                if (tipoTela == ListaUniversalActivity.TELA_NOTA_FISCAL_ENTRADA || tipoTela == ListaUniversalActivity.TELA_ITEM_NOTA_FISCAL_ENTRADA){
+
+                    // Instancia a classe de manipulacao de nota fiscal de entrada
+                    notaFiscalEntradaRotinas = new NotaFiscalEntradaRotinas(getContext());
+                    // Indica para a rotina que o tipo de conexao eh webservice
+                    notaFiscalEntradaRotinas.setTipoConexao((!funcoes.getValorXml("TipoConexao").equalsIgnoreCase(funcoes.NAO_ENCONTRADO)) ? funcoes.getValorXml("TipoConexao"): "I");
+                }
 
                 // Checa se o tipo de tela eh a de lista de nota fiscal de entrada
                 if (tipoTela == ListaUniversalActivity.TELA_NOTA_FISCAL_ENTRADA) {
@@ -358,7 +633,7 @@ public class ListauniversalFragment extends Fragment {
                         listaNotaFiscalEntrada = notaFiscalEntradaRotinas.listaNotaFiscalEntrada(where, NotaFiscalEntradaRotinas.CONFERIDO, progressBarStatus);
                     }
 
-                    // Checa a tela eh de itens de nota fiscal de entrada
+                // Checa a tela eh de itens de nota fiscal de entrada
                 } else if (tipoTela == ListaUniversalActivity.TELA_ITEM_NOTA_FISCAL_ENTRADA){
 
                     // Checa se eh uma aba de itens da notas nao conferidos
@@ -374,6 +649,17 @@ public class ListauniversalFragment extends Fragment {
                                                                                                          where,
                                                                                                          NotaFiscalEntradaRotinas.CONFERIDO,
                                                                                                          progressBarStatus);
+                    }
+
+                // Checa se a tela eh de lista de romaneio
+                } else if (tipoTela == ListaUniversalActivity.TELA_ROMANEIO){
+
+                    // Checa se eh uma aba de itens da notas nao conferidos
+                    if (nomeAba.contains("Conferir")){
+
+
+                    } else if (nomeAba.contains("Conferido")){
+
                     }
                 }
 
@@ -456,4 +742,52 @@ public class ListauniversalFragment extends Fragment {
         }
 
     }
+
+
+    private class AtualizarNotaFiscalEntrada extends  AsyncTask<Void, Void, Void>{
+
+        String sql;
+
+        public AtualizarNotaFiscalEntrada(String sql) {
+            this.sql = sql;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            // o progressBar agora eh setado como visivel
+            progressBarStatus.setVisibility(View.VISIBLE);
+        }
+
+        @Override
+        protected Void doInBackground(Void... params) {
+
+            NotaFiscalEntradaRotinas notaFiscalEntradaRotinas = new NotaFiscalEntradaRotinas(getContext());
+
+            // Checa se atualizou com sucesso
+            if ( notaFiscalEntradaRotinas.updateNotaFiscalEntrada(sql, progressBarStatus, null) ){
+
+                ((Activity) getContext()).runOnUiThread(new Runnable() {
+                    public void run() {
+
+                        Toast.makeText(getContext(), getResources().getString(R.string.atualizado_sucesso), Toast.LENGTH_LONG).show();
+
+                        // Atualiza a lista de notas de entrada
+                        LoaderLista carregarListaNotas = new LoaderLista(null, null);
+                        carregarListaNotas.execute();
+                    }
+                });
+            }
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            // Oculta a barra de status
+            progressBarStatus.setVisibility(View.GONE);
+        }
+    }
+
+
 }

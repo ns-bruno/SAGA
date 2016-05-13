@@ -95,15 +95,53 @@
                     android:layout_weight="1" />
             </LinearLayout>
 
-            <TextView
+            <LinearLayout
+                android:orientation="horizontal"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceMedium"
-                android:text="Codigo Barras do Produto"
-                android:id="@+id/activity_conferencia_item_nota_entrada_text_codigo_barras_produto"
-                android:layout_gravity="center_horizontal" />
+                android:layout_height="wrap_content" >
+
+                <EditText
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/activity_conferencia_item_nota_entrada_edit_codigo_barra_produto"
+                    android:layout_weight="1"
+                    android:hint="@string/codigo_barras"/>
+
+                <Button
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/activity_conferencia_item_nota_entrada_button_escanear_codigo_barras_produto"
+                    android:background="@mipmap/ic_barcode_scan_light"
+                    android:layout_weight="5"/>
 
             </LinearLayout>
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" >
+
+                <EditText
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/activity_conferencia_item_nota_entrada_edit_peso_bruto"
+                    android:layout_weight="1"
+                    android:inputType="numberDecimal"
+                    android:maxLength="7"
+                    android:hint="@string/peso_bruto"/>
+
+                <EditText
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/activity_conferencia_item_nota_entrada_edit_peso_liquido"
+                    android:layout_weight="1"
+                    android:inputType="numberDecimal"
+                    android:maxLength="7"
+                    android:hint="@string/peso_liquido"/>
+
+            </LinearLayout>
+
+        </LinearLayout>
 
         <FrameLayout
             android:layout_width="match_parent"

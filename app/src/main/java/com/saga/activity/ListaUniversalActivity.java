@@ -44,6 +44,7 @@ public class ListaUniversalActivity extends AppCompatActivity {
 
             dadosParametros.put(KEY_TIPO_TELA, tipoTela);
             dadosParametros.put("ID_AEAENTRA", (intentParametro.getInt("ID_AEAENTRA") > 0) ? intentParametro.getInt("ID_AEAENTRA") : -1);
+            dadosParametros.put("ID_AEAROMAN", (intentParametro.getInt("ID_AEAROMAN") > 0) ? intentParametro.getInt("ID_AEAROMAN") : -1);
 
             // Verifica qual eh o tipo da tela
             if (tipoTela == TELA_NOTA_FISCAL_ENTRADA){
@@ -52,6 +53,9 @@ public class ListaUniversalActivity extends AppCompatActivity {
             } else if (tipoTela == TELA_ITEM_NOTA_FISCAL_ENTRADA){
                 toolbarCabecalho.setTitle(R.string.itens_nota_fiscal_entrada);
                 idEntrada = intentParametro.getInt("ID_AEAENTRA");
+
+            } else if (tipoTela == TELA_ROMANEIO){
+                toolbarCabecalho.setTitle(R.string.romaneio);
             }
         }
 

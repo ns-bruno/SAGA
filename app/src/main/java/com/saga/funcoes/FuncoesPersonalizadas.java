@@ -13,6 +13,8 @@ import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
+import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Toast;
 
 import com.afollestad.materialdialogs.AlertDialogWrapper;
@@ -586,5 +588,10 @@ public class FuncoesPersonalizadas {
         }else {
             return  UUID.randomUUID().toString();
         }
+    }
+
+    public static void fecharTecladoVirtual(View activity){
+        InputMethodManager inputMethodManager = (InputMethodManager)  activity.getContext().getSystemService(Activity.INPUT_METHOD_SERVICE);
+        inputMethodManager.hideSoftInputFromWindow(activity.getWindowToken(), 0);
     }
 }

@@ -82,6 +82,7 @@ public class CadastroEmbalagemActivity extends AppCompatActivity {
                     new ZxingOrient(CadastroEmbalagemActivity.this)
                             .setInfo(getResources().getString(R.string.escanear_codigo_produto))
                             .setVibration(true)
+                            .setIcon(R.mipmap.ic_launcher)
                             .initiateScan();
 
                 } else {
@@ -331,7 +332,7 @@ public class CadastroEmbalagemActivity extends AppCompatActivity {
                 editModulo.setText(""+embalagem.getModulo());
                 editCasasDecimais.setText(""+embalagem.getDecimais());
                 editReferencia.setText(embalagem.getReferencia());
-                editCodigoBarras.setText(embalagem.getCodigoBarras());
+                editCodigoBarras.setText((!embalagem.getCodigoBarras().equalsIgnoreCase("anyType{}")) ? embalagem.getCodigoBarras() : "");
                 editDescricao.setText(embalagem.getDescricaoEmbalagem());
 
                 if (listaUnidadeVenda != null && listaUnidadeVenda.size() > 0) {

@@ -8,7 +8,8 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical" >
+        android:orientation="vertical"
+        android:layout_weight="1" >
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -43,5 +44,44 @@
 
 
     </LinearLayout>
+
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/activity_lista_produto_toolbar_rodape"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="?attr/colorPrimary"
+        android:elevation="4dp"
+        android:minHeight="?attr/actionBarSize"
+        app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp"
+        android:visibility="gone">
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" >
+
+            <EditText
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:id="@+id/activity_lista_produto_editText_pesquisar"
+                android:hint="@string/pesquisar_produto"
+                android:inputType="textCapCharacters"
+                android:layout_weight="1">
+                <requestFocus/>
+            </EditText>
+
+            <Button
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:id="@+id/activity_lista_produto_button_escanear_codigo_barra_produto"
+                android:layout_weight="6"
+                android:background="@mipmap/ic_barcode_scan" />
+
+        </LinearLayout>
+
+    </android.support.v7.widget.Toolbar>
 
 </LinearLayout>

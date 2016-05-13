@@ -34,7 +34,8 @@
             android:layout_height="match_parent"
             android:orientation="vertical"
             android:weightSum="1"
-            android:padding="10dp">
+            android:padding="10dp"
+            >
 
             <ProgressBar
                 style="?android:attr/progressBarStyleHorizontal"
@@ -54,7 +55,8 @@
             <Spinner
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:id="@+id/activity_cadastro_embalagem_spinner_unidade_venda" />
+                android:id="@+id/activity_cadastro_embalagem_spinner_unidade_venda"
+                android:background="@color/cinza_claro" />
 
             <LinearLayout
                 android:orientation="horizontal"
@@ -86,7 +88,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:id="@+id/activity_cadastro_embalagem_spinner_ativo"
-                    android:layout_weight="1" />
+                    android:layout_weight="1"
+                    android:background="@color/cinza_claro" />
 
                 <EditText
                     android:layout_width="match_parent"

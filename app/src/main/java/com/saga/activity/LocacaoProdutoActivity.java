@@ -142,6 +142,7 @@ public class LocacaoProdutoActivity extends AppCompatActivity {
                 new ZxingOrient(LocacaoProdutoActivity.this)
                         .setInfo(getResources().getString(R.string.escanear_codigo_produto))
                         .setVibration(true)
+                        .setIcon(R.mipmap.ic_launcher)
                         .initiateScan();
             }
         });
@@ -155,6 +156,7 @@ public class LocacaoProdutoActivity extends AppCompatActivity {
                 new ZxingOrient(LocacaoProdutoActivity.this)
                         .setInfo(getResources().getString(R.string.escanear_codigo_produto))
                         .setVibration(true)
+                        .setIcon(R.mipmap.ic_launcher)
                         .initiateScan();
             }
         });
@@ -168,6 +170,7 @@ public class LocacaoProdutoActivity extends AppCompatActivity {
                 new ZxingOrient(LocacaoProdutoActivity.this)
                         .setInfo(getResources().getString(R.string.escanear_codigo_produto))
                         .setVibration(true)
+                        .setIcon(R.mipmap.ic_launcher)
                         .initiateScan();
             }
         });
@@ -246,9 +249,16 @@ public class LocacaoProdutoActivity extends AppCompatActivity {
                     // Preenche o campos de locacao ativa com os dados retornado do leitor de codigo de barra
                     editTextLocacaoAtiva.setText(retornoEscanerCodigoBarra.getContents());
 
+                    // Muda o foco para o campo de locacao reserva
+                    editTextLocacaoReserva.requestFocus();
+                    // Posiciona o curso no final do texto
+                    editTextLocacaoReserva.setSelection(editTextLocacaoReserva.getText().length());
+
                 } else if (campoQueChamouLeitor == CAMPO_LOCACAO_RESERVA){
                     // Preenche o campos de locacao ativa com os dados retornado do leitor de codigo de barra
                     editTextLocacaoReserva.setText(retornoEscanerCodigoBarra.getContents());
+                    // Posiciona o curso no final do texto
+
                 }
             }
         } else {

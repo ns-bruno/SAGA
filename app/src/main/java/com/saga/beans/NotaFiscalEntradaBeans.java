@@ -10,6 +10,15 @@ public class NotaFiscalEntradaBeans {
     private double valorMercadoria, valorTotalEntrada;
     private ClifoBeans clifo;
     private NaturezaBeans natureza;
+    private boolean tagSelectContext;
+
+    public boolean isTagSelectContext() {
+        return tagSelectContext;
+    }
+
+    public void setTagSelectContext(boolean tagSelectContext) {
+        this.tagSelectContext = tagSelectContext;
+    }
 
     public int getIdNotaFiscalEntrada() {
         return idNotaFiscalEntrada;

@@ -190,8 +190,12 @@ public class LoginActivity extends AppCompatActivity {
                         ((Activity) LoginActivity.this).runOnUiThread(new Runnable() {
                             public void run() {
                                 funcoes.menssagem(contentValues);
+                                funcoes.setValorXml("UsuarioServidor", editUsuario.getText().toString());
+                                funcoes.setValorXml("SenhaServidor", editSenha.getText().toString());
                             }
                         });
+
+
                         Intent intent = new Intent(LoginActivity.this, InicioActivity.class);
                         startActivity(intent);
 

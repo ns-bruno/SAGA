@@ -298,8 +298,16 @@ public class ItemUniversalAdapter extends BaseAdapter {
         try {
             if (this.tipoItem == NOTA_FISCAL_ENTRADA) {
 
+
+                String obs = ( (listaNotaFiscalEntrada.get(position).getObservacao() != null) && (listaNotaFiscalEntrada.get(position).getObservacao().length() > 0) ) ?
+                                (listaNotaFiscalEntrada.get(position).getObservacao().replace("TRANSFERENCIA REFERENTE", "")) : "" ;
+
+                int totalCaracObs = ( (obs != null) && (obs.length() >= 30) ) ? 30 : obs.length();
+
                 textDescricao.setText(listaNotaFiscalEntrada.get(position).getClifo().getNomeRazao() + " (" +
-                                      listaNotaFiscalEntrada.get(position).getClifo().getNomeFantasia() + ")");
+                                      listaNotaFiscalEntrada.get(position).getClifo().getNomeFantasia().replace("anyType{}", "") + ") " +
+                                     ( (obs != null && obs.length() > 0) ? obs.substring(0, totalCaracObs) : "") );
+
                 textAbaixoDescricaoEsqueda.setText("Nº: " + listaNotaFiscalEntrada.get(position).getNumeroEntrada());
                 textAbaixoDescricaoDireita.setText("Dt. Ent.: " + funcoes.formataData(listaNotaFiscalEntrada.get(position).getDataEntrada()));
                 textBottonEsquerdo.setText((listaNotaFiscalEntrada.get(position).getClifo().getCidadeClifo() != null) ?
@@ -310,6 +318,25 @@ public class ItemUniversalAdapter extends BaseAdapter {
                     textBottonEsquerdoDois.setText(" | " + listaNotaFiscalEntrada.get(position).getNatureza().getDescricaoNatureza());
                 }
                 textBottonDireito.setText("Total: " + funcoes.arredondarValor(listaNotaFiscalEntrada.get(position).getValorTotalEntrada()));
+
+                if(listaNotaFiscalEntrada.get(position).isTagSelectContext()){
+                    view.setBackgroundColor(context.getResources().getColor(android.R.color.background_light));
+                    textDescricao.setTypeface(null, Typeface.BOLD);
+                    textAbaixoDescricaoEsqueda.setTypeface(null, Typeface.BOLD);
+                    textAbaixoDescricaoDireita.setTypeface(null, Typeface.BOLD);
+                    textBottonDireito.setTypeface(null, Typeface.BOLD);
+                    textBottonEsquerdo.setTypeface(null, Typeface.BOLD);
+                    textBottonEsquerdoDois.setTypeface(null, Typeface.BOLD);
+
+                } else {
+                    view.setBackgroundColor(context.getResources().getColor(android.R.color.transparent));
+                    textDescricao.setTypeface(null, Typeface.NORMAL);
+                    textAbaixoDescricaoEsqueda.setTypeface(null, Typeface.NORMAL);
+                    textAbaixoDescricaoDireita.setTypeface(null, Typeface.NORMAL);
+                    textBottonDireito.setTypeface(null, Typeface.NORMAL);
+                    textBottonEsquerdo.setTypeface(null, Typeface.NORMAL);
+                    textBottonEsquerdoDois.setTypeface(null, Typeface.NORMAL);
+                }
 
                 viewTopo.setVisibility(View.INVISIBLE);
                 viewRodape.setVisibility(View.INVISIBLE);
