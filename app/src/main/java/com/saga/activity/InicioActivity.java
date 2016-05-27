@@ -87,6 +87,9 @@ public class InicioActivity extends AppCompatActivity {
 
         if (funcoes.getValorXml("DigitaQuantidade").equalsIgnoreCase("S")){
             digitaQuantidade = true;
+
+        } else if (funcoes.getValorXml("DigitaQuantidade").equalsIgnoreCase(funcoes.NAO_ENCONTRADO)){
+            funcoes.setValorXml("DigitaQuantidade", "N");
         }
 
         String nomeCompletoUsua = getResources().getString(R.string.usuario_desconhecido);

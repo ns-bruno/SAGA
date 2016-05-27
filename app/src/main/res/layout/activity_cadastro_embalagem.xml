@@ -183,6 +183,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:id="@+id/activity_cadastro_embalagem_edit_descricao"
+                android:inputType="textCapCharacters"
                 android:hint="@string/descricao"/>
 
         </LinearLayout>

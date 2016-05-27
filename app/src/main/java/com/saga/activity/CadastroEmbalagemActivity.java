@@ -96,8 +96,6 @@ public class CadastroEmbalagemActivity extends AppCompatActivity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        //super.onActivityResult(requestCode, resultCode, data);
-        //IntentResult retornoEscanerCodigoBarra = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
         ZxingOrientResult retornoEscanerCodigoBarra = ZxingOrient.parseActivityResult(requestCode, resultCode, data);
 
         if(retornoEscanerCodigoBarra != null) {
@@ -107,8 +105,7 @@ public class CadastroEmbalagemActivity extends AppCompatActivity {
                 Toast.makeText(this, "Cancelado", Toast.LENGTH_LONG).show();
 
             } else {
-                Log.d("SAGA", "Scanned");
-                //Toast.makeText(this, "Scanned: " + retornoEscanerCodigoBarra.getContents(), Toast.LENGTH_LONG).show();
+                Log.d("SAGA", "Scanned - CadastroEmbalagemActivity");
 
                 editCodigoBarras.setText(retornoEscanerCodigoBarra.getContents());
                 // Posiciona o cursor para o final do texto
@@ -118,7 +115,7 @@ public class CadastroEmbalagemActivity extends AppCompatActivity {
             // This is important, otherwise the retornoEscanerCodigoBarra will not be passed to the fragment
             super.onActivityResult(requestCode, resultCode, data);
         }
-    }
+    } // Fim onActivityResult
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -143,6 +140,7 @@ public class CadastroEmbalagemActivity extends AppCompatActivity {
                     AtivoBeans ativo = (AtivoBeans) spinnerAtivo.getSelectedItem();
 
                     EmbalagemBeans embalagem = new EmbalagemBeans();
+                    embalagem.setIdUnidadeVenda(unidadeVenda.getIdUnidadeVenda());
                     embalagem.setReferencia(editReferencia.getText().toString());
                     embalagem.setCodigoBarras(editCodigoBarras.getText().toString());
                     embalagem.setAtivo(ativo.getSimNao());

@@ -75,6 +75,7 @@ public class ListaProdutoActivity extends AppCompatActivity {
         if (telaChamada == -1){
             // Mostra o campo de pesquisa de produto
             toolbarRodape.setVisibility(View.VISIBLE);
+            toolbarCabecalho.setTitle(getResources().getString(R.string.lista_produto));
 
         } else if (telaChamada == LOCACAO_PRODUTO_ACTIVITY){
             toolbarCabecalho.setTitle(textoPesquisa);
@@ -89,8 +90,20 @@ public class ListaProdutoActivity extends AppCompatActivity {
 
                 ProdutoLojaBeans produtoLojaBeans = (ProdutoLojaBeans) parent.getItemAtPosition(position);
 
+                // Checa se teve alguma outra tela que chamou esta tela (lista de produtos)
+                if (telaChamada == -1){
+
+                    Bundle bundle = new Bundle();
+                    bundle.putInt(CadastroEmbalagemActivity.KEY_ID_PRODUTO, produtoLojaBeans.getProduto().getIdProduto());
+                    bundle.putInt(CadastroEmbalagemActivity.KEY_ID_AEAEMBAL, produtoLojaBeans.getProduto().getUnidadeVenda().getIdUnidadeVenda());
+
+                    // Abre a tela de detalhes do produto
+                    Intent intent = new Intent(ListaProdutoActivity.this, ConferenciaItemNotaEntradaActivity.class);
+                    intent.putExtras(bundle);
+                    startActivity(intent);
+
                 // Checa se que chamou esta tela foi a tela de locacao de produtos
-                if (telaChamada == LOCACAO_PRODUTO_ACTIVITY){
+                } else if (telaChamada == LOCACAO_PRODUTO_ACTIVITY){
                     Bundle idProduto = new Bundle();
                     idProduto.putInt("ID_AEAPLOJA", produtoLojaBeans.getIdProdutoLoja());
 
@@ -214,6 +227,11 @@ public class ListaProdutoActivity extends AppCompatActivity {
             String whereProduto = "";
             String textoPesquisa = editTextPesquisarProduto.getText().toString().replace(" ", "%");
             //Intent intent = new Intent(LocacaoProdutoActivity.this, ListaProdutoActivity.class);
+
+            // Checa se realmente tem algum texto a ser pesquisado
+            if ((textoPesquisa != null) && (textoPesquisa.length() > 1)){
+                textoPesquisa = textoPesquisa.toUpperCase();
+            }
 
             // Checa se o primeiro caracter eh uma letra
             if (Character.isLetter(editTextPesquisarProduto.getText().charAt(0))) {

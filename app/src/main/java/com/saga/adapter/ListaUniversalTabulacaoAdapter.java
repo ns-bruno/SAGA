@@ -6,10 +6,11 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
+import android.util.SparseArray;
 
 import com.saga.R;
 import com.saga.activity.ListaUniversalActivity;
-import com.saga.activity.fragment.ListauniversalFragment;
+import com.saga.activity.fragment.ListaUniversalFragment;
 
 /**
  * Created by Bruno Nogueira Silva on 21/01/2016.
@@ -18,6 +19,7 @@ public class ListaUniversalTabulacaoAdapter extends FragmentStatePagerAdapter {
 
     private ContentValues dadosParamentros;
     private Context context;
+    private SparseArray<Fragment> registeredFragments = new SparseArray<Fragment>();
 
     public ListaUniversalTabulacaoAdapter(FragmentManager fm, Context context, ContentValues dadosParamentros) {
         super(fm);
@@ -29,7 +31,7 @@ public class ListaUniversalTabulacaoAdapter extends FragmentStatePagerAdapter {
     public Fragment getItem(int position) {
         Fragment fragment = null;
 
-        fragment = new ListauniversalFragment();
+        fragment = new ListaUniversalFragment();
         // Cria uma vareavel para salvar os paramentros
         Bundle argumentos = new Bundle();
         argumentos.putInt(ListaUniversalActivity.KEY_TIPO_TELA, dadosParamentros.getAsInteger(ListaUniversalActivity.KEY_TIPO_TELA));
@@ -38,6 +40,8 @@ public class ListaUniversalTabulacaoAdapter extends FragmentStatePagerAdapter {
 
         // Coloca o argumento dentro do fragment
         fragment.setArguments(argumentos);
+
+        registeredFragments.put(position, fragment);
 
         return fragment;
     }
@@ -70,5 +74,9 @@ public class ListaUniversalTabulacaoAdapter extends FragmentStatePagerAdapter {
         } else {
             return 0;
         }
+    }
+
+    public Fragment getRegisteredFragments(int position) {
+        return registeredFragments.get(position);
     }
 }

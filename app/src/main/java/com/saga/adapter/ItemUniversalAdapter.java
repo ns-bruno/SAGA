@@ -2,9 +2,13 @@ package com.saga.adapter;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Typeface;
 import android.os.Build;
+import android.support.v7.widget.PopupMenu;
 import android.view.LayoutInflater;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -12,6 +16,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.saga.R;
+import com.saga.activity.CadastroEmbalagemActivity;
+import com.saga.activity.LocacaoProdutoActivity;
 import com.saga.beans.AtivoBeans;
 import com.saga.beans.EmbalagemBeans;
 import com.saga.beans.EstoqueBeans;
@@ -246,7 +252,7 @@ public class ItemUniversalAdapter extends BaseAdapter {
     }
 
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
+    public View getView(final int position, View convertView, ViewGroup parent) {
 
         View view = convertView;
 
@@ -302,6 +308,12 @@ public class ItemUniversalAdapter extends BaseAdapter {
                 String obs = ( (listaNotaFiscalEntrada.get(position).getObservacao() != null) && (listaNotaFiscalEntrada.get(position).getObservacao().length() > 0) ) ?
                                 (listaNotaFiscalEntrada.get(position).getObservacao().replace("TRANSFERENCIA REFERENTE", "")) : "" ;
 
+                // Checa se retornou o campos com anyType{}
+                if (obs.contains("anyType{}")){
+                    //  Remove o anyType{}
+                    obs = obs.replace("anyType{}", "");
+                }
+
                 int totalCaracObs = ( (obs != null) && (obs.length() >= 30) ) ? 30 : obs.length();
 
                 textDescricao.setText(listaNotaFiscalEntrada.get(position).getClifo().getNomeRazao() + " (" +
@@ -349,12 +361,19 @@ public class ItemUniversalAdapter extends BaseAdapter {
                 textAbaixoDescricaoDireita.setText("Ref.: " + listaItemNotaFiscalEntrada.get(position).getEstoque().getProdutoLoja().getProduto().getReferencia());
                 textBottonEsquerdo.setText(listaItemNotaFiscalEntrada.get(position).getUnidadeVenda().getSigla());
                 textBottonEsquerdoDois.setText(" | " + funcoes.arredondarValor(listaItemNotaFiscalEntrada.get(position).getQuantidade()) +
-                        (((listaItemNotaFiscalEntrada.get(position).getQuantidadeConferido() < listaItemNotaFiscalEntrada.get(position).getQuantidade()) &&
-                          (listaItemNotaFiscalEntrada.get(position).getQuantidadeConferido() > 0)) ?
-                                                      " | " + funcoes.arredondarValor(listaItemNotaFiscalEntrada.get(position).getQuantidadeConferido()) : "") );
+                        (( (listaItemNotaFiscalEntrada.get(position).getQuantidadeConferido() > 0) ) ?
+                                                      " | C." + funcoes.arredondarValor(listaItemNotaFiscalEntrada.get(position).getQuantidadeConferido()) : "") );
                 textBottonDireito.setText("Est.: " + funcoes.arredondarValor(listaItemNotaFiscalEntrada.get(position).getEstoque().getEstoque()));
 
-                if ((listaItemNotaFiscalEntrada.get(position).getQuantidadeConferido() < listaItemNotaFiscalEntrada.get(position).getQuantidade()) &&
+                // Checa se este item ja foi conferido
+                if (listaItemNotaFiscalEntrada.get(position).getQuantidadeConferido() == listaItemNotaFiscalEntrada.get(position).getQuantidade()){
+
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        viewTopo.setBackgroundColor(context.getColor(R.color.verde));
+                    } else {
+                        viewTopo.setBackgroundColor(context.getResources().getColor(R.color.verde));
+                    }
+                } else if ((listaItemNotaFiscalEntrada.get(position).getQuantidadeConferido() < listaItemNotaFiscalEntrada.get(position).getQuantidade()) &&
                     (listaItemNotaFiscalEntrada.get(position).getQuantidadeConferido() > 0)){
 
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -362,10 +381,37 @@ public class ItemUniversalAdapter extends BaseAdapter {
                     } else {
                         viewTopo.setBackgroundColor(context.getResources().getColor(R.color.amarelo));
                     }
+                } else if ((listaItemNotaFiscalEntrada.get(position).getQuantidadeConferido() > listaItemNotaFiscalEntrada.get(position).getQuantidade())) {
+
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        viewTopo.setBackgroundColor(context.getColor(R.color.vermelho));
+                    } else {
+                        viewTopo.setBackgroundColor(context.getResources().getColor(R.color.vermelho));
+                    }
+
                 } else{
                     viewTopo.setVisibility(View.INVISIBLE);
                 }
                 viewRodape.setVisibility(View.INVISIBLE);
+
+                if(listaItemNotaFiscalEntrada.get(position).isTagSelectContext()){
+                    view.setBackgroundColor(context.getResources().getColor(android.R.color.background_light));
+                    textDescricao.setTypeface(null, Typeface.BOLD);
+                    textAbaixoDescricaoEsqueda.setTypeface(null, Typeface.BOLD);
+                    textAbaixoDescricaoDireita.setTypeface(null, Typeface.BOLD);
+                    textBottonDireito.setTypeface(null, Typeface.BOLD);
+                    textBottonEsquerdo.setTypeface(null, Typeface.BOLD);
+                    textBottonEsquerdoDois.setTypeface(null, Typeface.BOLD);
+
+                } else {
+                    view.setBackgroundColor(context.getResources().getColor(android.R.color.transparent));
+                    textDescricao.setTypeface(null, Typeface.NORMAL);
+                    textAbaixoDescricaoEsqueda.setTypeface(null, Typeface.NORMAL);
+                    textAbaixoDescricaoDireita.setTypeface(null, Typeface.NORMAL);
+                    textBottonDireito.setTypeface(null, Typeface.NORMAL);
+                    textBottonEsquerdo.setTypeface(null, Typeface.NORMAL);
+                    textBottonEsquerdoDois.setTypeface(null, Typeface.NORMAL);
+                }
 
             } else if (this.tipoItem == EMBALAGEM){
                 textDescricao.setText(listaEmbalagem.get(position).getUnidadeVenda().getSigla() + " | " + listaEmbalagem.get(position).getDescricaoEmbalagem());
@@ -422,6 +468,7 @@ public class ItemUniversalAdapter extends BaseAdapter {
                     // Pega a imagem que esta no banco de dados
                     imageCirclePrincipal.setImageBitmap(listaProduto.get(position).getImagemProduto().getImagem());
                 }
+                imageOpcao.setVisibility(View.VISIBLE);
 
 
             } else if (this.tipoItem == LISTA_PRODUTO_LOJA){
@@ -477,6 +524,7 @@ public class ItemUniversalAdapter extends BaseAdapter {
                     textBottonEsquerdo.setTypeface(null, Typeface.NORMAL);
                     textBottonEsquerdoDois.setTypeface(null, Typeface.NORMAL);
                 }
+                imageOpcao.setVisibility(View.VISIBLE);
 
             } else if (this.tipoItem == LISTA_ESTOQUE){
 
@@ -519,6 +567,19 @@ public class ItemUniversalAdapter extends BaseAdapter {
                 viewTopo.setVisibility(View.INVISIBLE);
             }
 
+            if ( (tipoItem == LISTA_PRODUTO) || (tipoItem == LISTA_PRODUTO_LOJA) ){
+                imageOpcao.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        // Checa se eh uma lista de produtos
+                        if ( (tipoItem == LISTA_PRODUTO) || (tipoItem == LISTA_PRODUTO_LOJA) ) {
+                            // Mostra um menu popup
+                            showPopup(v, position);
+                        }
+                    }
+                });
+            }
+
         }catch (Exception e){
             // Armazena as informacoes para para serem exibidas e enviadas
             ContentValues contentValues = new ContentValues();
@@ -535,5 +596,47 @@ public class ItemUniversalAdapter extends BaseAdapter {
             funcoes.menssagem(contentValues);
         }
         return view;
+    }
+
+    public void showPopup(View v, final int posicao) {
+        PopupMenu popup = new PopupMenu(context, v);
+        MenuInflater inflater = popup.getMenuInflater();
+        inflater.inflate(R.menu.menu_lista_produto_context, popup.getMenu());
+        popup.show();
+
+        popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+
+                switch (item.getItemId()) {
+
+                    case R.id.menu_lista_produto_context_locacao_produto:
+
+                        ProdutoBeans produto;
+                        ProdutoLojaBeans produtoLoja;
+
+                        Intent intent = new Intent(context, LocacaoProdutoActivity.class);
+
+                        if (tipoItem == LISTA_PRODUTO){
+
+                            produto = (ProdutoBeans) getItem(posicao);
+                            intent.putExtra(LocacaoProdutoActivity.KEY_CODIGO_ESTRUTURAL, produto.getCodigoEstrutural());
+
+                        } else if (tipoItem == LISTA_PRODUTO_LOJA){
+
+                            produtoLoja = (ProdutoLojaBeans) getItem(posicao);
+                            intent.putExtra(LocacaoProdutoActivity.KEY_CODIGO_ESTRUTURAL, produtoLoja.getProduto().getCodigoEstrutural());
+                        }
+                        context.startActivity(intent);
+                        break;
+
+                    default:
+                        break;
+                }
+
+
+                return true;
+            }
+        });
     }
 }

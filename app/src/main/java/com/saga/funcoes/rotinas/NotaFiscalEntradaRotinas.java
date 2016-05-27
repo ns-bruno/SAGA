@@ -301,6 +301,7 @@ public class NotaFiscalEntradaRotinas extends Rotinas {
         try{
             String sql =    "SELECT AEAITENT.ID_AEAITENT, AEAITENT.ID_AEAENTRA, AEAITENT.ID_AEAITSAI, AEAITENT.ID_AEAITPED, AEAITENT.GUID AS GUID_ITENT, " +
                             "AEAITENT.DT_CAD AS DT_CAD_ITENT, AEAITENT.DT_ALT AS DT_ALT_ITENT, AEAITENT.DT_ENTRADA, AEAITENT.SEQUENCIA, AEAITENT.QTDE_DAT_VAL, " +
+                            //"(SELECT SUM(AEAITCNF.QUANTIDADE) FROM AEAITCNF WHERE AEAITCNF.ID_AEAITENT = AEAITENT.ID_AEAITENT ) AS QTDE_CONFERIDO, " +
                             "AEAITENT.QTDE_CONFERIDO, AEAITENT.VL_MERCADORIA, AEAITENT.TIPO AS TIPO_ITENT, AEAITENT.TIPO_PRODUTO, AEAITENT.TIPO_BAIXA, AEAITENT.OBS, " +
                             "AEAITENT.FC_MERCADORIA_UN, AEAITENT.FC_CT_COMP, AEAITENT.QUANTIDADE, \n" +
 
@@ -380,6 +381,8 @@ public class NotaFiscalEntradaRotinas extends Rotinas {
                             "ON(AEAPRODU.ID_AEAUNVEN = AEAUNVEN_PRODU.ID_AEAUNVEN) \n" +
                             "LEFT OUTER JOIN AEATPGRD AEATPGRD \n" +
                             "ON(AEAPRODU.ID_AEATPGRD = AEATPGRD.ID_AEATPGRD) \n";
+                            //"LEFT OUTER JOIN AEAITCNF \n" +
+                            //"ON(AEAITCNF.ID_AEAITENT = AEAITENT.ID_AEAITENT) \n";
             if (resumido == NAO) {
                 sql +=      "LEFT OUTER JOIN AEACODOM AEACODOM_PRODU \n" +
                             "ON(AEAPRODU.ID_AEACODOM = AEACODOM_PRODU.ID_AEACODOM) \n";

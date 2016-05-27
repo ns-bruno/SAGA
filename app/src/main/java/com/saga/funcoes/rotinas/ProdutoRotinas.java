@@ -70,7 +70,8 @@ public class ProdutoRotinas extends Rotinas {
         try{
             String sql =
                     "SELECT AEAPRODU.ID_AEAPRODU, AEAPRODU.CODIGO, AEAPRODU.CODIGO_ESTRUTURAL, AEAPRODU.CODIGO_BARRAS, "+
-                    "AEAPRODU.GUID, AEAPRODU.DESCRICAO, AEAPRODU.DESCRICAO_AUXILIAR, AEAPRODU.REFERENCIA, AEAMARCA.ID_AEAMARCA, "+
+                    "AEAPRODU.GUID, AEAPRODU.DESCRICAO, AEAPRODU.DESCRICAO_AUXILIAR, AEAPRODU.REFERENCIA, " +
+                    "AEAPRODU.PESO_BRUTO, AEAPRODU.PESO_LIQUIDO, "+
                     "AEAMARCA.ID_AEAMARCA, AEAMARCA.DESCRICAO AS DESCRICAO_MARCA, "+
                     "AEAUNVEN.ID_AEAUNVEN, AEAUNVEN.SIGLA, AEAUNVEN.DESCRICAO_SINGULAR, AEAUNVEN.DECIMAIS "+
                     "FROM AEAPRODU "+
@@ -80,26 +81,6 @@ public class ProdutoRotinas extends Rotinas {
                     "ON(AEAPRODU.ID_AEAUNVEN = AEAUNVEN.ID_AEAUNVEN) " +
                     "WHERE (AEAPRODU.ID_AEAPRODU = " + idProduto + ") ";
 
-            /*"SELECT AEAPRODU.ID_AEAPRODU, AEAPRODU.CODIGO, AEAPRODU.CODIGO_ESTRUTURAL, AEAPRODU.CODIGO_BARRAS, "+
-                    "AEAPRODU.GUID, AEAPRODU.DESCRICAO, AEAPRODU.DESCRICAO_AUXILIAR, AEAPRODU.REFERENCIA, AEAMARCA.ID_AEAMARCA, "+
-                    "AEAMARCA.ID_AEAMARCA, AEAMARCA.DESCRICAO AS DESCRICAO_MARCA, "+
-                    "AEAUNVEN.ID_AEAUNVEN, AEAUNVEN.SIGLA, AEAUNVEN.DESCRICAO_SINGULAR, AEAUNVEN.DECIMAIS "+
-                    "FROM AEAPRODU "+
-                    "LEFT OUTER JOIN AEAMARCA "+
-                    "ON(AEAPRODU.ID_AEAMARCA = AEAMARCA.ID_AEAMARCA) "+
-                    "LEFT OUTER JOIN AEAUNVEN "+
-                    "ON(AEAPRODU.ID_AEAUNVEN = AEAUNVEN.ID_AEAUNVEN) " +
-
-                    "WHERE AEAPRODU.ID_AEAPRODU = (SELECT AEAPRODU.ID_AEAPRODU \n" +
-                    "FROM AEAITENT \n" +
-                    "LEFT OUTER JOIN AEAESTOQ \n" +
-                    "ON(AEAITENT.ID_AEAESTOQ = AEAESTOQ.ID_AEAESTOQ) \n" +
-                    "LEFT OUTER JOIN AEAPLOJA \n" +
-                    "ON(AEAESTOQ.ID_AEAPLOJA = AEAPLOJA.ID_AEAPLOJA) \n" +
-                    "LEFT OUTER JOIN AEAPRODU \n" +
-                    "ON(AEAPLOJA.ID_AEAPRODU = AEAPRODU.ID_AEAPRODU) \n" +
-                    "WHERE AEAITENT.ID_AEAITENT = " + idItemEntrada + ") "*/
-
             if (where != null){
                 sql += " AND (" + where + " ) ";
             }
@@ -107,7 +88,7 @@ public class ProdutoRotinas extends Rotinas {
             if (tipoConexao.equalsIgnoreCase("W")){
                 // Instancia a classe para manipular o webservice
                 WSSisInfoWebservice webserviceSisInfo = new WSSisInfoWebservice(context);
-                SoapObject dadosProduto = webserviceSisInfo.executarWebservice(sql, WSSisInfoWebservice.FUNCTION_DADOS_PRODUTOS_RESUMIDOS_ITEM_ENTRADA, null);
+                SoapObject dadosProduto = webserviceSisInfo.executarWebservice(sql, WSSisInfoWebservice.FUNCTION_DADOS_PRODUTOS_RESUMIDOS, null);
 
                 if (dadosProduto != null){
                     // Instancia a variavel do produto
@@ -121,6 +102,8 @@ public class ProdutoRotinas extends Rotinas {
                     produtoRetorno.setDescricaoProduto(dadosProduto.getProperty("descricaoProduto").toString());
                     produtoRetorno.setDescricaoAuxiliar((dadosProduto.hasProperty("descricaoAuxiliar")) ? dadosProduto.getProperty("descricaoAuxiliar").toString() : "");
                     produtoRetorno.setReferencia((dadosProduto.hasProperty("referencia")) ? dadosProduto.getProperty("referencia").toString() : "");
+                    produtoRetorno.setPesoBruto( (dadosProduto.hasProperty("pesoBruto")) ? Double.parseDouble(dadosProduto.getProperty("pesoBruto").toString()) : 0 );
+                    produtoRetorno.setPesoLiquido( (dadosProduto.hasProperty("pesoLiquido")) ? Double.parseDouble(dadosProduto.getProperty("pesoLiquido").toString()) : 0 );
 
                     MarcaBeans marca= new MarcaBeans();
                     SoapObject objetoMarca = (SoapObject) dadosProduto.getProperty("marca");

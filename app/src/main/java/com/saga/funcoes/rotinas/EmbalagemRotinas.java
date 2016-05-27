@@ -300,10 +300,10 @@ public class EmbalagemRotinas extends Rotinas {
             }
 
         } catch (Exception e){
-            FuncoesPersonalizadas funcoes = new FuncoesPersonalizadas(context);
+            final FuncoesPersonalizadas funcoes = new FuncoesPersonalizadas(context);
 
             // Armazena as informacoes para para serem exibidas e enviadas
-            ContentValues contentValues = new ContentValues();
+            final ContentValues contentValues = new ContentValues();
             contentValues.put("comando", 0);
             contentValues.put("tela", "EmbalagemRotina");
             contentValues.put("mensagem", "Erro ao inserir a embalagem. \n" + funcoes.tratamentoErroBancoDados(e.getMessage()));
@@ -313,7 +313,11 @@ public class EmbalagemRotinas extends Rotinas {
             contentValues.put("empresa", funcoes.getValorXml("ChaveEmpresa"));
             contentValues.put("email", funcoes.getValorXml("Email"));
 
-            funcoes.menssagem(contentValues);
+            ((Activity) context).runOnUiThread(new Runnable() {
+                public void run() {
+                    funcoes.menssagem(contentValues);
+                }
+            });
         }
 
         return false;

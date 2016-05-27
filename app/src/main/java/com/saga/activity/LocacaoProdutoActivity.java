@@ -61,6 +61,7 @@ public class LocacaoProdutoActivity extends AppCompatActivity {
     private Button buttonEscanearCodigoBarraProduto, buttonEscanearCodigoBarraLocacaoAtiva, buttonEscanearCodigoBarraLocacaoReserva;
     public static final int REQUISICAO_DADOS_PRODUTOS = 100,
                             PRODUTO_RETORNADO_SUCESSO = 200;
+    public static final String KEY_CODIGO_ESTRUTURAL = "CODIGO_ESTRUTURAL";
     private final String CAMPO_LOCACAO_ATIVA = "CAMPO_LOCACAO_ATIVA", CAMPO_LOCACAO_RESERVA = "CAMPO_LOCACAO_RESERVA", CAMPO_PRODUTO = "CAMPO_PRODUTO";
     private String campoQueChamouLeitor = null;
 
@@ -70,6 +71,28 @@ public class LocacaoProdutoActivity extends AppCompatActivity {
         setContentView(R.layout.activity_locacao_produto);
 
         recuperaCampos();
+
+        Bundle intentParametro = getIntent().getExtras();
+        if (intentParametro != null) {
+
+
+
+            // Checa se passou algum codigo de produto por parametro
+            if( (intentParametro.containsKey(KEY_CODIGO_ESTRUTURAL)) && (intentParametro.getString(KEY_CODIGO_ESTRUTURAL).length() > 0 ) ){
+
+                // Coloca o codigo passado por paramentro no campo de pesquisa
+                editTextPesquisar.setText(intentParametro.getString(String.valueOf(KEY_CODIGO_ESTRUTURAL)));
+                // Executa a funcao para pesquisar o produto passado por parametro
+                pesquisarProduto();
+
+            } else if ( (intentParametro.containsKey(CadastroEmbalagemActivity.KEY_ID_PRODUTO)) && ((intentParametro.getInt(CadastroEmbalagemActivity.KEY_ID_PRODUTO)) > 0 ) ){
+
+                // Coloca o codigo passado por paramentro no campo de pesquisa
+                editTextPesquisar.setText(""+intentParametro.getInt(String.valueOf(CadastroEmbalagemActivity.KEY_ID_PRODUTO)));
+                // Executa a funcao para pesquisar o produto passado por parametro
+                pesquisarProduto();
+            }
+        }
 
         editTextPesquisar.setOnKeyListener(new View.OnKeyListener() {
             @Override
@@ -231,7 +254,7 @@ public class LocacaoProdutoActivity extends AppCompatActivity {
 
             // Checha se retornou algum dado
             if(retornoEscanerCodigoBarra.getContents() == null) {
-                Log.d("SAGA", "Cancelled scan - CadastroEmbalagemActivity");
+                Log.d("SAGA", "Cancelled scan - LocacaoProdutoActivity");
 
                 Toast.makeText(this, getResources().getString(R.string.escaneamento_cancelado), Toast.LENGTH_LONG).show();
 
@@ -320,12 +343,13 @@ public class LocacaoProdutoActivity extends AppCompatActivity {
                     // Checa se eh um numero
                     if (!Character.isDigit(digito)) {
                         apenasNumeros = false;
+                        break;
                     }
                 }
                 if (apenasNumeros) {
 
                     whereProduto += "(AEAPRODU.CODIGO = " + editTextPesquisar.getText().toString() + ") OR (AEAPRODU.CODIGO_ESTRUTURAL = '" + editTextPesquisar.getText().toString() + "') " +
-                            "OR (AEAPRODU.REFERENCIA = '" + editTextPesquisar.getText().toString() + "') ";
+                            "OR (AEAPRODU.REFERENCIA = '" + editTextPesquisar.getText().toString() + "') " ;
 
                 } else {
                     whereProduto += "(AEAPRODU.DESCRICAO LIKE '%" + textoPesquisa + "%') OR (AEAMARCA.DESCRICAO LIKE '%" + textoPesquisa + "%' ) OR " +

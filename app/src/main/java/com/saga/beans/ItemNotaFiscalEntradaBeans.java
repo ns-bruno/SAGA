@@ -11,6 +11,7 @@ public class ItemNotaFiscalEntradaBeans {
     private CodigoOrigemProdutoBeans codigoOrigem;
     private String guidItemEntrada, dataCadastro, dataAlteracao, dataEntrada, tipo, tipoProduto, tipoBaixa, observacao;
     private double quantidade, quantidadeDataValidade, quantidadeConferido, valorMercadoria, unitarioItemMercadoria, totalItem;
+    private boolean tagSelectContext;
 
     public int getIdItemNotaFiscalEntrada() {
         return idItemNotaFiscalEntrada;
@@ -194,5 +195,13 @@ public class ItemNotaFiscalEntradaBeans {
 
     public void setTotalItem(double totalItem) {
         this.totalItem = totalItem;
+    }
+
+    public boolean isTagSelectContext() {
+        return tagSelectContext;
+    }
+
+    public void setTagSelectContext(boolean tagSelectContext) {
+        this.tagSelectContext = tagSelectContext;
     }
 }

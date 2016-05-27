@@ -271,7 +271,6 @@ public class LocacaoEnderecoActivity extends AppCompatActivity {
                 }
             }
         }
-
         if(retornoEscanerCodigoBarra != null) {
             // Checa se retornou algum codigo
             if(retornoEscanerCodigoBarra.getContents() == null) {
@@ -280,7 +279,7 @@ public class LocacaoEnderecoActivity extends AppCompatActivity {
                 Toast.makeText(this, "Cancelado", Toast.LENGTH_LONG).show();
 
             } else {
-                Log.d("SAGA", "Scanned");
+                Log.d("SAGA", "Scanned - LocacaoEnderecoActivity");
                 //Toast.makeText(this, "Scanned: " + retornoEscanerCodigoBarra.getContents(), Toast.LENGTH_LONG).show();
 
                 if (campoQueChamouLeitor == CAMPO_LOCACAO){
@@ -506,6 +505,8 @@ public class LocacaoEnderecoActivity extends AppCompatActivity {
 
             } else {
                 mensagemNaoEncontramos();
+                // Retorna o foco para o campos de pesquisa de endereco
+                editTextPesquisaLocacao.requestFocus();
             }
             //tirando o ProgressBar da nossa tela
             progressStatus.setVisibility(View.GONE);
@@ -514,9 +515,10 @@ public class LocacaoEnderecoActivity extends AppCompatActivity {
         }
 
         private void mensagemNaoEncontramos() {
-            ((Activity) getApplicationContext()).runOnUiThread(new Runnable() {
+            ((Activity) LocacaoEnderecoActivity.this).runOnUiThread(new Runnable() {
                 public void run() {
-                    new MaterialDialog.Builder(getApplicationContext())
+
+                    new MaterialDialog.Builder(LocacaoEnderecoActivity.this)
                             .title(R.string.produtos)
                             .content(R.string.nenhum_valor_encontrado)
                             .positiveText(android.R.string.ok)

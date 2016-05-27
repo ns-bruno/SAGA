@@ -97,6 +97,11 @@
     <string name="marcar_conferido">Marcar como Conferido.</string>
     <string name="peso_bruto">Peso Bruto</string>
     <string name="peso_liquido">Peso Liquido</string>
+    <string name="lista_produto">Lista de Produtos</string>
+    <string name="inserido_com_sucesso">Inserido com Sucesso.</string>
+    <string name="ja_foi_conferido_o_item">Já foi conferido o item </string>
+    <string name="lista_nota_fiscal_entrada">Lista de Nota Fiscal de Entrada</string>
+    <string name="lista_itens_nota_fiscal_entrada">Produtos da Nota Fiscal de Entrada</string>
 
     <string-array name="tab_nota_fiscal_entrada">
         <item>Conferir Entradas</item>

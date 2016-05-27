@@ -9,6 +9,7 @@ import android.view.MenuItem;
 
 import com.ogaclejapan.smarttablayout.SmartTabLayout;
 import com.saga.R;
+import com.saga.activity.fragment.ListaUniversalFragment;
 import com.saga.adapter.ListaUniversalTabulacaoAdapter;
 
 /**
@@ -61,7 +62,7 @@ public class ListaUniversalActivity extends AppCompatActivity {
 
         ViewPager viewPager = (ViewPager) findViewById(R.id.fragment_tabulacao_lista_universal_pager);
 
-        ListaUniversalTabulacaoAdapter listaUniversalTabulacaoAdapter = new ListaUniversalTabulacaoAdapter(getSupportFragmentManager(), getApplicationContext(), dadosParametros);
+        final ListaUniversalTabulacaoAdapter listaUniversalTabulacaoAdapter = new ListaUniversalTabulacaoAdapter(getSupportFragmentManager(), getApplicationContext(), dadosParametros);
 
         viewPager.setAdapter(listaUniversalTabulacaoAdapter);
 
@@ -69,6 +70,41 @@ public class ListaUniversalActivity extends AppCompatActivity {
         SmartTabLayout tabLayout = (SmartTabLayout) findViewById(R.id.fragment_tabulacao_lista_universal_tab_layout);
         // Seta as paginas nas tabs
         tabLayout.setViewPager(viewPager);
+
+        // Pega os cliques das abas
+        viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+
+                // checa se eh a segunda aba (confediro)
+                if (listaUniversalTabulacaoAdapter.getPageTitle(position).toString().contains("Conferido")){
+                    // Pega o fragment para manipular o mesmo
+                    ListaUniversalFragment fragmentConferido = (ListaUniversalFragment) listaUniversalTabulacaoAdapter.getRegisteredFragments(position);
+                    // Checa se retornou o fragment
+                    if (fragmentConferido != null){
+                        // Executa uma funcao dentro do fragment
+                        fragmentConferido.onLoaderLista();
+                    }
+                } else if (listaUniversalTabulacaoAdapter.getPageTitle(position).toString().contains("Conferir")){
+                    // Pega o fragment para manipular o mesmo
+                    ListaUniversalFragment fragmentConferir = (ListaUniversalFragment) listaUniversalTabulacaoAdapter.getRegisteredFragments(position);
+
+                    if (fragmentConferir != null){
+                        //Bundle a = fragmentConferir.getArguments();
+                    }
+                }
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+
+            }
+        });
 
     }
 

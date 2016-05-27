@@ -23,7 +23,6 @@ import com.afollestad.materialdialogs.MaterialDialog;
 import com.github.clans.fab.FloatingActionButton;
 import com.saga.R;
 import com.saga.adapter.ItemUniversalAdapter;
-import com.saga.banco.interno.funcoesSql.ProdutoSql;
 import com.saga.beans.EmbalagemBeans;
 import com.saga.beans.ItemNotaFiscalEntradaBeans;
 import com.saga.beans.ProdutoBeans;
@@ -50,9 +49,10 @@ public class ConferenciaItemNotaEntradaActivity extends AppCompatActivity {
     private ProgressBar progressStatus;
     private Button buttonEscanecarCodigoBarrasProduto;
     private EditText editCodigoBarraProduto, editPesoBruto, editPesoLiquido;
-    private int idEntrada, idItemEntrada, idProduto = -1, idEmbalagem = -1;
+    private int idEntrada = -1, idItemEntrada = -1, idProduto = -1, idEmbalagem = -1;
     public static final String KEY_ID_AEAITENT = "ID_AEAITENT";
-    public static final String KEY_ID_AEAENTRA = "ID_AEAENTRA";
+    public static final String KEY_ID_AEAENTRA = "ID_AEAENTRA",
+                               KEY_ID_AEAPRODU = "ID_AEAPRODU";
 
 
     @Override
@@ -67,9 +67,15 @@ public class ConferenciaItemNotaEntradaActivity extends AppCompatActivity {
 
         Bundle intentParametro = getIntent().getExtras();
         if (intentParametro != null) {
-            idItemEntrada = intentParametro.getInt(KEY_ID_AEAITENT);
-            idEntrada = intentParametro.getInt(KEY_ID_AEAENTRA);
 
+            if ( (intentParametro.containsKey(KEY_ID_AEAENTRA) && (intentParametro.containsKey(KEY_ID_AEAITENT))) ) {
+                idItemEntrada = intentParametro.getInt(KEY_ID_AEAITENT);
+                idEntrada = intentParametro.getInt(KEY_ID_AEAENTRA);
+
+            } else if ( (intentParametro.containsKey(KEY_ID_AEAPRODU)) ){
+                idProduto = intentParametro.getInt(KEY_ID_AEAPRODU);
+            }
+            // Carrega os detalhes do produto
             LoaderDetalhesProdutos carregarDetalhes = new LoaderDetalhesProdutos();
             carregarDetalhes.execute();
         }
@@ -115,6 +121,14 @@ public class ConferenciaItemNotaEntradaActivity extends AppCompatActivity {
         });
     } // onCreate
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        // Carrega os detalhes do produto
+        //LoaderDetalhesProdutos carregarDetalhes = new LoaderDetalhesProdutos();
+        //carregarDetalhes.execute();
+    }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -124,15 +138,15 @@ public class ConferenciaItemNotaEntradaActivity extends AppCompatActivity {
             // Checha se retornou algum dado
             if(retornoEscanerCodigoBarra.getContents() == null) {
                 Log.d("SAGA", "Cancelled scan - ConferenciaItemNotaEntradaActivity");
+
                 Toast.makeText(this, "Cancelado", Toast.LENGTH_LONG).show();
 
             } else {
-                Log.d("SAGA", "Scanned");
-                //Toast.makeText(this, "Scanned: " + retornoEscanerCodigoBarra.getContents(), Toast.LENGTH_LONG).show();
+                Log.d("SAGA", "Scanned - ConferenciaItemNotaEntradaActivity");
 
                 editCodigoBarraProduto.setText(retornoEscanerCodigoBarra.getContents());
                 // Posiciona o cursor para o final do texto
-                editCodigoBarraProduto.setSelection(editCodigoBarraProduto.getText().length());
+                editCodigoBarraProduto.setSelection(editCodigoBarraProduto.length());
             }
         } else {
             // This is important, otherwise the retornoEscanerCodigoBarra will not be passed to the fragment
@@ -208,6 +222,12 @@ public class ConferenciaItemNotaEntradaActivity extends AppCompatActivity {
 
                 }
                 break;
+
+            case R.id.menu_activity_conferencia_item_nota_entrada_atualizar:
+                // Carrega os detalhes do produto
+                LoaderDetalhesProdutos carregarDetalhes = new LoaderDetalhesProdutos();
+                carregarDetalhes.execute();
+                break;
             default:
                 break;
         }
@@ -236,18 +256,24 @@ public class ConferenciaItemNotaEntradaActivity extends AppCompatActivity {
         @Override
         protected Void doInBackground(Void... params) {
             try {
-                NotaFiscalEntradaRotinas notaFiscalEntradaRotinas = new NotaFiscalEntradaRotinas(getApplicationContext());
+                if (idItemEntrada > 0) {
+                    NotaFiscalEntradaRotinas notaFiscalEntradaRotinas = new NotaFiscalEntradaRotinas(getApplicationContext());
 
-                //where = "ID_AEAITENT = " + idItemEntrada;
+                    produto = notaFiscalEntradaRotinas.selectProdutoResumidoIdItemEntrada(idItemEntrada);
 
-                produto = notaFiscalEntradaRotinas.selectProdutoResumidoIdItemEntrada(idItemEntrada);
+                } else if (idProduto > 0){
+                    ProdutoRotinas produtoRotinas = new ProdutoRotinas(getApplicationContext());
 
+                    produto = produtoRotinas.selectProdutoResumidoId(idProduto, null);
+                }
+                // Checa se foi pego os dados de algum produto
                 if (produto != null) {
+
+                    idProduto = produto.getIdProduto();
+
                     listaEmbalagem = new ArrayList<EmbalagemBeans>();
 
                     EmbalagemRotinas embalagemRotinas = new EmbalagemRotinas(ConferenciaItemNotaEntradaActivity.this);
-
-                    idProduto = produto.getIdProduto();
 
                     listaEmbalagem = embalagemRotinas.listaEmbalagemProduto(idProduto, null, progressStatus);
                 }
