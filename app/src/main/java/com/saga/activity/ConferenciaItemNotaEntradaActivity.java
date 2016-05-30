@@ -196,7 +196,7 @@ public class ConferenciaItemNotaEntradaActivity extends AppCompatActivity {
 
             case R.id.menu_activity_conferencia_item_nota_entrada_salvar:
 
-                if (idProduto > 0){
+                if ( (validaDados()) && (idProduto > 0) ){
 
                     // Checa se foi digitado um codigo de barra mais que 5 digitos
                     if ( (editCodigoBarraProduto.getText().length() > 5) || (editPesoLiquido.getText().length() > 0) || (editPesoBruto.getText().length() > 0) ) {
@@ -233,6 +233,32 @@ public class ConferenciaItemNotaEntradaActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private boolean validaDados(){
+        boolean retorno = true;
+
+        if (editCodigoBarraProduto.getText().length() > 0){
+            final FuncoesPersonalizadas funcoes = new FuncoesPersonalizadas(ConferenciaItemNotaEntradaActivity.this);
+
+            if (!funcoes.isValidarCodigoBarraGS1(editCodigoBarraProduto.getText().toString())){
+
+                final ContentValues contentValues = new ContentValues();
+                contentValues.put("comando", 2);
+                contentValues.put("tela", "ConferenciaItemNotaEntradaActivity");
+                contentValues.put("mensagem", getResources().getString(R.string.codigo_barras_invalido));
+
+                ((Activity) ConferenciaItemNotaEntradaActivity.this).runOnUiThread(new Runnable() {
+                    public void run() {
+                        funcoes.menssagem(contentValues);
+                    }
+                });
+
+                retorno = false;
+            }
+        }
+
+        return retorno;
     }
 
 

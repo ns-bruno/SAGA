@@ -1,5 +1,7 @@
 package com.saga.activity;
 
+import android.app.Activity;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
@@ -23,6 +25,7 @@ import com.saga.beans.AtivoBeans;
 import com.saga.beans.EmbalagemBeans;
 import com.saga.beans.ProdutoBeans;
 import com.saga.beans.UnidadeVendaBeans;
+import com.saga.funcoes.FuncoesPersonalizadas;
 import com.saga.funcoes.rotinas.EmbalagemRotinas;
 import com.saga.funcoes.rotinas.ProdutoRotinas;
 import com.saga.funcoes.rotinas.UnidadeVendaRotinas;
@@ -134,7 +137,7 @@ public class CadastroEmbalagemActivity extends AppCompatActivity {
 
             case R.id.menu_activity_cadastro_embalagem_salvar:
 
-                if (idEmbalagem > 0){
+                if ( (validaDados()) && (idEmbalagem > 0) ){
 
                     UnidadeVendaBeans unidadeVenda = (UnidadeVendaBeans) spinnerUnidadeVenda.getSelectedItem();
                     AtivoBeans ativo = (AtivoBeans) spinnerAtivo.getSelectedItem();
@@ -153,7 +156,7 @@ public class CadastroEmbalagemActivity extends AppCompatActivity {
                     executarInsertBack.execute();
 
 
-                } else if (idProduto > 0){
+                } else if ( (validaDados()) && (idProduto > 0) ){
 
 
                     UnidadeVendaBeans unidadeVenda = (UnidadeVendaBeans) spinnerUnidadeVenda.getSelectedItem();
@@ -221,6 +224,32 @@ public class CadastroEmbalagemActivity extends AppCompatActivity {
         adapterAtivo.setListaAtivo(listaAtivo);
 
         spinnerAtivo.setAdapter(adapterAtivo);
+    }
+
+    private boolean validaDados(){
+        boolean retorno = true;
+
+        if (editCodigoBarras.getText().length() > 0){
+            final FuncoesPersonalizadas funcoes = new FuncoesPersonalizadas(CadastroEmbalagemActivity.this);
+
+            if (!funcoes.isValidarCodigoBarraGS1(editCodigoBarras.getText().toString())){
+
+                final ContentValues contentValues = new ContentValues();
+                contentValues.put("comando", 2);
+                contentValues.put("tela", "CadastroEmbalagemActivity");
+                contentValues.put("mensagem", getResources().getString(R.string.codigo_barras_invalido));
+
+                ((Activity) CadastroEmbalagemActivity.this).runOnUiThread(new Runnable() {
+                    public void run() {
+                        funcoes.menssagem(contentValues);
+                    }
+                });
+
+                retorno = false;
+            }
+        }
+
+        return retorno;
     }
 
 

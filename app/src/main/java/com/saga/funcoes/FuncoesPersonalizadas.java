@@ -594,4 +594,70 @@ public class FuncoesPersonalizadas {
         InputMethodManager inputMethodManager = (InputMethodManager)  activity.getContext().getSystemService(Activity.INPUT_METHOD_SERVICE);
         inputMethodManager.hideSoftInputFromWindow(activity.getWindowToken(), 0);
     }
+
+    public boolean isValidarCodigoBarraGS1(String codigoBarras){
+        boolean apenasNumeros = true;
+
+        // Passa por todos os caracter checando se eh apenas numero
+        for (char digito : codigoBarras.toCharArray()) {
+            // Checa se eh um numero
+            if (!Character.isDigit(digito)) {
+                apenasNumeros = false;
+                break;
+            }
+        }
+        // Checa se o que foi passado por parametro eh apenas numero
+        if (apenasNumeros){
+            // Salva o ultimo digito do codigo (digito verificador)
+            int digito = Integer.parseInt(""+codigoBarras.charAt(codigoBarras.length() -1));
+            // Pega todos os digetos mas sem o digito verificador
+            String codigoSemDigitoVerificador = codigoBarras.substring(0, codigoBarras.length() -1);
+            // Vareavel para armazenar a soma dos digitos
+            int soma = 0;
+
+            // Checa a quantidade de digito
+            if ( (codigoBarras.length() == 13) || (codigoBarras.length() == 17) ){
+
+                // Passa por todos os digitos do codigo sem o digito verificador
+                for(int i = 0; i < codigoSemDigitoVerificador.length(); i++){
+                    // Checa se i eh par
+                    if (( (i+1) % 2) == 0) {
+                        // Mutiplica por 3 e depois soma
+                        soma += Integer.parseInt(""+codigoSemDigitoVerificador.charAt(i)) * 3;
+                    } else {
+                        // Soma os digitos
+                        soma += Integer.parseInt(""+codigoSemDigitoVerificador.charAt(i));
+                    }
+                }
+            } else if ( (codigoBarras.length() == 8) || (codigoBarras.length() == 12) || (codigoBarras.length() == 14) || (codigoBarras.length() == 18) ){
+                // Passa por todos os digitos do codigo sem o digito verificador
+                for(int i = 0; i < codigoSemDigitoVerificador.length(); i++){
+
+                    // Checa se i eh par
+                    if (( (i+1) % 2) == 0) {
+                        // Soma os digitos
+                        soma += Integer.parseInt(""+codigoSemDigitoVerificador.charAt(i));
+                    } else {
+                        // Mutiplica por 3 e depois soma
+                        soma += Integer.parseInt(""+codigoSemDigitoVerificador.charAt(i)) * 3;
+                    }
+                }
+            // Returna falso caso nao seja um codigo de barra do tamanho valido pelo GS1
+            } else {
+                return false;
+            }
+            int somaMultipla = soma;
+
+            // Entra no while enquanto a soma nao for multiplo de 10
+            while ( (somaMultipla % 10) != 0 ){
+                somaMultipla ++;
+            }
+            // Subtraia soma por um múltiplo de 10 superior mais próximo a ele
+            // Depois checa se o resultado da subtracao eh igual ao digito passado por paramento
+            return (soma - somaMultipla) == digito;
+
+        } else {
+            return false;
+        }
+    }
 }

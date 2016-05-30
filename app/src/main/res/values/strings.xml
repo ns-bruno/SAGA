@@ -102,6 +102,7 @@
     <string name="ja_foi_conferido_o_item">Já foi conferido o item </string>
     <string name="lista_nota_fiscal_entrada">Lista de Nota Fiscal de Entrada</string>
     <string name="lista_itens_nota_fiscal_entrada">Produtos da Nota Fiscal de Entrada</string>
+    <string name="codigo_barras_invalido">Código de Barras Inválido</string>
 
     <string-array name="tab_nota_fiscal_entrada">
         <item>Conferir Entradas</item>
