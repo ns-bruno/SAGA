@@ -35,8 +35,26 @@ public class ListaUniversalTabulacaoAdapter extends FragmentStatePagerAdapter {
         // Cria uma vareavel para salvar os paramentros
         Bundle argumentos = new Bundle();
         argumentos.putInt(ListaUniversalActivity.KEY_TIPO_TELA, dadosParamentros.getAsInteger(ListaUniversalActivity.KEY_TIPO_TELA));
-        argumentos.putString(ListaUniversalActivity.KEY_NOME_ABA, context.getResources().getStringArray(R.array.tab_nota_fiscal_entrada)[position]);
+
+        if (dadosParamentros.getAsInteger(ListaUniversalActivity.KEY_TIPO_TELA) == ListaUniversalActivity.TELA_NOTA_FISCAL_ENTRADA) {
+
+            argumentos.putString(ListaUniversalActivity.KEY_NOME_ABA, context.getResources().getStringArray(R.array.tab_nota_fiscal_entrada)[position]);
+
+        } else if (dadosParamentros.getAsInteger(ListaUniversalActivity.KEY_TIPO_TELA) == ListaUniversalActivity.TELA_ITEM_NOTA_FISCAL_ENTRADA) {
+
+            argumentos.putString(ListaUniversalActivity.KEY_NOME_ABA, context.getResources().getStringArray(R.array.tab_item_nota_fiscal_entrada)[position]);
+
+        } else if (dadosParamentros.getAsInteger(ListaUniversalActivity.KEY_TIPO_TELA) == ListaUniversalActivity.TELA_ROMANEIO) {
+
+            argumentos.putString(ListaUniversalActivity.KEY_NOME_ABA, context.getResources().getStringArray(R.array.tab_romaneio)[position]);
+
+        } else if (dadosParamentros.getAsInteger(ListaUniversalActivity.KEY_TIPO_TELA) == ListaUniversalActivity.TELA_ITEM_ROMANEIO) {
+
+            argumentos.putString(ListaUniversalActivity.KEY_NOME_ABA, context.getResources().getStringArray(R.array.tab_item_romaneio)[position]);
+        }
+
         argumentos.putInt("ID_AEAENTRA", dadosParamentros.getAsInteger("ID_AEAENTRA"));
+        argumentos.putInt("ID_AEAROMAN", dadosParamentros.getAsInteger("ID_AEAROMAN"));
 
         // Coloca o argumento dentro do fragment
         fragment.setArguments(argumentos);
@@ -55,6 +73,12 @@ public class ListaUniversalTabulacaoAdapter extends FragmentStatePagerAdapter {
 
         } else if (dadosParamentros.getAsInteger(ListaUniversalActivity.KEY_TIPO_TELA) == ListaUniversalActivity.TELA_ITEM_NOTA_FISCAL_ENTRADA) {
             titulos = context.getResources().getStringArray(R.array.tab_item_nota_fiscal_entrada);
+
+        } else if (dadosParamentros.getAsInteger(ListaUniversalActivity.KEY_TIPO_TELA) == ListaUniversalActivity.TELA_ROMANEIO) {
+            titulos = context.getResources().getStringArray(R.array.tab_romaneio);
+
+        } else if (dadosParamentros.getAsInteger(ListaUniversalActivity.KEY_TIPO_TELA) == ListaUniversalActivity.TELA_ITEM_ROMANEIO) {
+            titulos = context.getResources().getStringArray(R.array.tab_item_romaneio);
         }
 
         return titulos[position];
@@ -70,6 +94,14 @@ public class ListaUniversalTabulacaoAdapter extends FragmentStatePagerAdapter {
         } else if (dadosParamentros.getAsInteger(ListaUniversalActivity.KEY_TIPO_TELA) == ListaUniversalActivity.TELA_ITEM_NOTA_FISCAL_ENTRADA) {
             // retorna o numero de abas a ser criado
             return context.getResources().getStringArray(R.array.tab_item_nota_fiscal_entrada).length;
+
+        } else if (dadosParamentros.getAsInteger(ListaUniversalActivity.KEY_TIPO_TELA) == ListaUniversalActivity.TELA_ROMANEIO) {
+            // retorna o numero de abas a ser criado
+            return context.getResources().getStringArray(R.array.tab_romaneio).length;
+
+        } else if (dadosParamentros.getAsInteger(ListaUniversalActivity.KEY_TIPO_TELA) == ListaUniversalActivity.TELA_ITEM_ROMANEIO) {
+            // retorna o numero de abas a ser criado
+            return context.getResources().getStringArray(R.array.tab_item_romaneio).length;
 
         } else {
             return 0;

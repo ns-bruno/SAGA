@@ -99,4 +99,28 @@ public class RomaneioBeans {
     public void setValor(double valor) {
         this.valor = valor;
     }
+
+    public AreasBeans getAreaRomaneio() {
+        return areaRomaneio;
+    }
+
+    public void setAreaRomaneio(AreasBeans areaRomaneio) {
+        this.areaRomaneio = areaRomaneio;
+    }
+
+    public EmpresaBeans getEmpresaRomaneio() {
+        return empresaRomaneio;
+    }
+
+    public void setEmpresaRomaneio(EmpresaBeans empresaRomaneio) {
+        this.empresaRomaneio = empresaRomaneio;
+    }
+
+    public ClifoBeans getClifoRomaneio() {
+        return clifoRomaneio;
+    }
+
+    public void setClifoRomaneio(ClifoBeans clifoRomaneio) {
+        this.clifoRomaneio = clifoRomaneio;
+    }
 }

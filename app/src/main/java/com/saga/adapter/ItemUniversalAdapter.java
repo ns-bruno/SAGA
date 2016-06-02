@@ -1,5 +1,6 @@
 package com.saga.adapter;
 
+import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
@@ -22,10 +23,12 @@ import com.saga.beans.AtivoBeans;
 import com.saga.beans.EmbalagemBeans;
 import com.saga.beans.EstoqueBeans;
 import com.saga.beans.ItemNotaFiscalEntradaBeans;
+import com.saga.beans.ItemRomaneioBeans;
 import com.saga.beans.LocesBeans;
 import com.saga.beans.NotaFiscalEntradaBeans;
 import com.saga.beans.ProdutoBeans;
 import com.saga.beans.ProdutoLojaBeans;
+import com.saga.beans.RomaneioBeans;
 import com.saga.beans.UnidadeVendaBeans;
 import com.saga.funcoes.FuncoesPersonalizadas;
 
@@ -47,7 +50,9 @@ public class ItemUniversalAdapter extends BaseAdapter {
                             ATIVO = 4,
                             LISTA_PRODUTO_LOJA = 6,
                             LISTA_ESTOQUE = 7,
-                            LISTA_LOCES = 8;
+                            LISTA_LOCES = 8,
+                            LISTA_ROMANEIO = 9,
+                            LISTA_ITEM_ROMANEIO = 10;
     private Context context;
     private int tipoItem;
     private List<NotaFiscalEntradaBeans> listaNotaFiscalEntrada;
@@ -59,6 +64,8 @@ public class ItemUniversalAdapter extends BaseAdapter {
     private List<ProdutoLojaBeans> listaProdutoLoja;
     private List<EstoqueBeans> listaEstoque;
     private List<LocesBeans> listaLoces;
+    private List<RomaneioBeans> listaRomaneio;
+    private List<ItemRomaneioBeans> listaItemRomaneio;
 
     public ItemUniversalAdapter(Context context, int tipoItem) {
         this.context = context;
@@ -137,6 +144,22 @@ public class ItemUniversalAdapter extends BaseAdapter {
         this.listaLoces = listaLoces;
     }
 
+    public List<RomaneioBeans> getListaRomaneio() {
+        return listaRomaneio;
+    }
+
+    public void setListaRomaneio(List<RomaneioBeans> listaRomaneio) {
+        this.listaRomaneio = listaRomaneio;
+    }
+
+    public List<ItemRomaneioBeans> getListaItemRomaneio() {
+        return listaItemRomaneio;
+    }
+
+    public void setListaItemRomaneio(List<ItemRomaneioBeans> listaItemRomaneio) {
+        this.listaItemRomaneio = listaItemRomaneio;
+    }
+
     @Override
     public int getCount() {
         // Verifica o tipo de item
@@ -168,6 +191,12 @@ public class ItemUniversalAdapter extends BaseAdapter {
 
         } else if (this.tipoItem == LISTA_LOCES){
             return listaLoces.size();
+
+        } else if (this.tipoItem == LISTA_ROMANEIO){
+            return listaRomaneio.size();
+
+        } else if (this.tipoItem == LISTA_ITEM_ROMANEIO){
+            return listaItemRomaneio.size();
 
         }
         else {
@@ -207,6 +236,12 @@ public class ItemUniversalAdapter extends BaseAdapter {
         } else if (this.tipoItem == LISTA_LOCES){
             return listaLoces.get(position);
 
+        } else if (this.tipoItem == LISTA_ROMANEIO){
+            return listaRomaneio.get(position);
+
+        } else if (this.tipoItem == LISTA_ITEM_ROMANEIO){
+            return listaItemRomaneio.get(position);
+
         }
         else {
             return null;
@@ -244,6 +279,12 @@ public class ItemUniversalAdapter extends BaseAdapter {
 
         } else if (this.tipoItem == LISTA_LOCES){
             return listaLoces.get(position).getIdLoces();
+
+        } else if (this.tipoItem == LISTA_ROMANEIO){
+            return listaRomaneio.get(position).getIdRomaneio();
+
+        } else if (this.tipoItem == LISTA_ITEM_ROMANEIO){
+            return listaItemRomaneio.get(position).getIdItemRomaneio();
 
         }
         else {
@@ -565,6 +606,32 @@ public class ItemUniversalAdapter extends BaseAdapter {
                 textBottonEsquerdoDois.setVisibility(View.INVISIBLE);
                 viewRodape.setVisibility(View.INVISIBLE);
                 viewTopo.setVisibility(View.INVISIBLE);
+
+
+            } else if (this.tipoItem == LISTA_ROMANEIO){
+
+                textDescricao.setText(listaRomaneio.get(position).getAreaRomaneio().getDescricaoAreas() + " - "  + listaRomaneio.get(position).getObservacaoRomaneio());
+                textAbaixoDescricaoEsqueda.setText("Dt.: " + funcoes.formataData(listaRomaneio.get(position).getDataRomaneio()));
+                textAbaixoDescricaoDireita.setText("Dt. Saí.:" + ( (listaRomaneio.get(position).getDataSaida().length() > 0) ?  funcoes.formataData(listaRomaneio.get(position).getDataSaida()) : "") );
+                textBottonEsquerdo.setText("Dt. Fecha.: " + ( (listaRomaneio.get(position).getDataFechamento().length() > 0) ?  funcoes.formataData(listaRomaneio.get(position).getDataFechamento()) : ""));
+                textBottonEsquerdoDois.setVisibility(View.INVISIBLE);
+                textBottonDireito.setText("Vl.: " + funcoes.arredondarValor(listaRomaneio.get(position).getValor()));
+
+                viewRodape.setVisibility(View.INVISIBLE);
+                viewTopo.setVisibility(View.INVISIBLE);
+
+            } else if (this.tipoItem == LISTA_ITEM_ROMANEIO){
+
+                textDescricao.setText(listaItemRomaneio.get(position).getSaida().getNomeCliente() + " (" + funcoes.formataDataHora(listaItemRomaneio.get(position).getSaida().getDataCad()) + ")");
+                textAbaixoDescricaoEsqueda.setText(listaItemRomaneio.get(position).getSaida().getSerieSaida().getCodigo() + " - " + listaItemRomaneio.get(position).getSaida().getNumeroSaida());
+                textAbaixoDescricaoDireita.setText( ( (listaItemRomaneio.get(position).getSaida().getCidadeSaida().getDescricaoCidade().length() > 0) ?
+                        listaItemRomaneio.get(position).getSaida().getCidadeSaida().getDescricaoCidade() : "") );
+                textBottonEsquerdo.setText("Vl.: " + listaItemRomaneio.get(position).getSaida().getValorTotalSaida());
+                textBottonEsquerdoDois.setText(" | " + ( (listaItemRomaneio.get(position).getSaida().getAtacadoVarejo().equalsIgnoreCase("0")) ? "Atac" : "Vare" ) );
+                textBottonDireito.setText( ( (listaItemRomaneio.get(position).getSaida().getBairroCliente().length() > 0) ?  listaItemRomaneio.get(position).getSaida().getBairroCliente() : "") );
+
+                viewRodape.setVisibility(View.INVISIBLE);
+                viewTopo.setVisibility(View.INVISIBLE);
             }
 
             if ( (tipoItem == LISTA_PRODUTO) || (tipoItem == LISTA_PRODUTO_LOJA) ){
@@ -580,12 +647,12 @@ public class ItemUniversalAdapter extends BaseAdapter {
                 });
             }
 
-        }catch (Exception e){
+        }catch (final Exception e){
             // Armazena as informacoes para para serem exibidas e enviadas
-            ContentValues contentValues = new ContentValues();
+            final ContentValues contentValues = new ContentValues();
             contentValues.put("comando", 0);
             contentValues.put("tela", "ItemUniversalAdapter");
-            contentValues.put("mensagem", funcoes.tratamentoErroBancoDados(e.getMessage()));
+            contentValues.put("mensagem", e.getMessage());
             contentValues.put("dados", e.toString());
             // Pega os dados do usuario
             funcoes = new FuncoesPersonalizadas(context);
@@ -593,7 +660,13 @@ public class ItemUniversalAdapter extends BaseAdapter {
             contentValues.put("empresa", funcoes.getValorXml("ChaveEmpresa"));
             contentValues.put("email", funcoes.getValorXml("Email"));
 
-            funcoes.menssagem(contentValues);
+            final FuncoesPersonalizadas finalFuncoes = funcoes;
+
+            ((Activity) context).runOnUiThread(new Runnable() {
+                public void run() {
+                    finalFuncoes.menssagem(contentValues);
+                }
+            });
         }
         return view;
     }

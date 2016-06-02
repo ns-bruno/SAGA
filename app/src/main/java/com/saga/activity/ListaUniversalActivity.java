@@ -23,7 +23,8 @@ public class ListaUniversalActivity extends AppCompatActivity {
     private ContentValues dadosParametros;
     public static final int TELA_ROMANEIO = 0,
                             TELA_NOTA_FISCAL_ENTRADA = 1,
-                            TELA_ITEM_NOTA_FISCAL_ENTRADA = 2;
+                            TELA_ITEM_NOTA_FISCAL_ENTRADA = 2,
+                            TELA_ITEM_ROMANEIO = 3;
     public static final String KEY_TIPO_TELA = "KEY_TIPO_TELA";
     public static final String KEY_NOME_ABA = "KEY_NOME_ABA";
 
@@ -57,6 +58,9 @@ public class ListaUniversalActivity extends AppCompatActivity {
 
             } else if (tipoTela == TELA_ROMANEIO){
                 toolbarCabecalho.setTitle(R.string.romaneio);
+
+            } else if (tipoTela == TELA_ITEM_ROMANEIO){
+                toolbarCabecalho.setTitle(R.string.itens_romaneio);
             }
         }
 

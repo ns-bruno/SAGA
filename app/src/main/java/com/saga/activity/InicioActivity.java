@@ -162,8 +162,9 @@ public class InicioActivity extends AppCompatActivity {
 
                             case 1:
                                 // Abre a tela de romaneio
-                                //Intent intent = new Intent(InicioActivity.this, ClienteListaActivity.class);
-                                //startActivity(intent);
+                                Intent intentRomaneio = new Intent(InicioActivity.this, ListaUniversalActivity.class);
+                                intentRomaneio.putExtra(ListaUniversalActivity.KEY_TIPO_TELA, ListaUniversalActivity.TELA_ROMANEIO);
+                                startActivity(intentRomaneio);
                                 return true;
                             //break;
 

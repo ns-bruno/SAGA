@@ -103,6 +103,7 @@
     <string name="lista_nota_fiscal_entrada">Lista de Nota Fiscal de Entrada</string>
     <string name="lista_itens_nota_fiscal_entrada">Produtos da Nota Fiscal de Entrada</string>
     <string name="codigo_barras_invalido">Código de Barras Inválido</string>
+    <string name="itens_romaneio">Itens do Romaneio</string>
 
     <string-array name="tab_nota_fiscal_entrada">
         <item>Conferir Entradas</item>
@@ -112,5 +113,15 @@
     <string-array name="tab_item_nota_fiscal_entrada">
         <item>Conferir Itens</item>
         <item>Já Conferidos</item>
+    </string-array>
+
+    <string-array name="tab_romaneio">
+        <item>Conferir Romaneios</item>
+        <item>Já Conferidos</item>
+    </string-array>
+
+    <string-array name="tab_item_romaneio">
+        <item>Itens a Conferir</item>
+        <item>Itens Conferidos</item>
     </string-array>
 </resources>

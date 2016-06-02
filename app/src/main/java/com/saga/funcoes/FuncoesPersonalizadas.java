@@ -471,7 +471,7 @@ public class FuncoesPersonalizadas {
 
         try{
             if(dataHora != null){
-                Scanner scannerParametro = new Scanner(dataHora.replace(" ", "-").replace(":", "-")).useDelimiter("\\-");
+                Scanner scannerParametro = new Scanner(dataHora.replace(" ", "-").replace(":", "-").replace(".", "-")).useDelimiter("\\-");
                 int ano = scannerParametro.nextInt();
                 int mes = scannerParametro.nextInt();
                 int dia = scannerParametro.nextInt();
