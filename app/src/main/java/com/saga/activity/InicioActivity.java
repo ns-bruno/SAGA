@@ -11,11 +11,12 @@ import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.CompoundButton;
-import android.widget.Toast;
 
 import com.dexafree.materialList.card.Card;
 import com.dexafree.materialList.listeners.RecyclerItemClickListener;
 import com.dexafree.materialList.view.MaterialListView;
+import com.github.johnpersano.supertoasts.SuperToast;
+import com.github.johnpersano.supertoasts.util.Style;
 import com.mikepenz.materialdrawer.AccountHeader;
 import com.mikepenz.materialdrawer.AccountHeaderBuilder;
 import com.mikepenz.materialdrawer.Drawer;
@@ -174,6 +175,13 @@ public class InicioActivity extends AppCompatActivity {
                                 startActivity(intentProduto);
                                 return true;
 
+                            case 3:
+                                // Abre a tela de romaneio
+                                Intent intentPedido = new Intent(InicioActivity.this, ListaUniversalActivity.class);
+                                intentPedido.putExtra(ListaUniversalActivity.KEY_TIPO_TELA, ListaUniversalActivity.TELA_PEDIDO);
+                                startActivity(intentPedido);
+                                return true;
+
                             case 5:
                                 // Abre a tela de notas fiscais de entradas
                                 Intent intent = new Intent(InicioActivity.this, ListaUniversalActivity.class);
@@ -241,7 +249,10 @@ public class InicioActivity extends AppCompatActivity {
 
             if (cliqueVoltar < 1){
                 // Mostra uma mensagem para clicar novamente em voltar
-                Toast.makeText(InicioActivity.this, getResources().getString(R.string.clique_sair_novamente_para_sair), Toast.LENGTH_LONG).show();
+                //Toast.makeText(InicioActivity.this, getResources().getString(R.string.clique_sair_novamente_para_sair), Toast.LENGTH_LONG).show();
+
+                SuperToast.create(InicioActivity.this, getResources().getString(R.string.clique_sair_novamente_para_sair), SuperToast.Duration.LONG, Style.getStyle(Style.GRAY, SuperToast.Animations.POPUP)).show();
+
                 cliqueVoltar ++;
                 // Cria um temporizador para voltar a zero o clique depois que fechar a menssagem
                 Handler handler = new Handler();

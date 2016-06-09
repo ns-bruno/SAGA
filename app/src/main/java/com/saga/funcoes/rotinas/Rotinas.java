@@ -11,6 +11,7 @@ public class Rotinas {
 	
 	protected Context context;
 	protected String tipoConexao = "I";
+	public static final int CONFERIDO = 999, SEM_CONFERIR = 888 , SIM = 777, NAO = 666;
 	
 	public Rotinas(Context context) {
 		this.context = context;

@@ -24,6 +24,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.afollestad.materialdialogs.MaterialDialog;
+import com.github.johnpersano.supertoasts.SuperToast;
+import com.github.johnpersano.supertoasts.util.Style;
 import com.saga.R;
 import com.saga.adapter.ItemUniversalAdapter;
 import com.saga.beans.EstoqueBeans;
@@ -256,7 +258,7 @@ public class LocacaoProdutoActivity extends AppCompatActivity {
             if(retornoEscanerCodigoBarra.getContents() == null) {
                 Log.d("SAGA", "Cancelled scan - LocacaoProdutoActivity");
 
-                Toast.makeText(this, getResources().getString(R.string.escaneamento_cancelado), Toast.LENGTH_LONG).show();
+                SuperToast.create(LocacaoProdutoActivity.this, getResources().getString(R.string.escaneamento_cancelado), SuperToast.Duration.LONG, Style.getStyle(Style.RED, SuperToast.Animations.POPUP)).show();
 
             } else {
                 Log.d("SAGA", "Scanned");
@@ -380,14 +382,14 @@ public class LocacaoProdutoActivity extends AppCompatActivity {
                         "(AEAPRODU.DESCRICAO_AUXILIAR LIKE '%" + textoPesquisa + "%') OR (AEAPRODU.CODIGO_BARRAS = '" + editTextPesquisar.getText().toString() + "') ";
             }
 
-            intent.putExtra(ListaProdutoActivity.KEY_TELA_CHAMADA, ListaProdutoActivity.LOCACAO_PRODUTO_ACTIVITY);
+            intent.putExtra(ListaProdutoActivity.KEY_TELA_CHAMADA, ListaProdutoActivity.TELA_LOCACAO_PRODUTO_ACTIVITY);
             intent.putExtra(ListaProdutoActivity.KEY_TEXTO_PESQUISA, editTextPesquisar.getText().toString());
             intent.putExtra(ListaProdutoActivity.KEY_WHERE_PESQUISA, whereProduto);
             // Abre a activity aquardando uma resposta
             startActivityForResult(intent, REQUISICAO_DADOS_PRODUTOS);
 
         } else {
-            Toast.makeText(LocacaoProdutoActivity.this, "Campos de pesquisa vazio.", Toast.LENGTH_LONG).show();
+            SuperToast.create(LocacaoProdutoActivity.this, getResources().getString(R.string.campo_pesquisa_vazio), SuperToast.Duration.LONG, Style.getStyle(Style.GRAY, SuperToast.Animations.POPUP)).show();
         }
     }
 

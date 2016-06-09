@@ -21,6 +21,8 @@ import android.widget.Toast;
 
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.github.clans.fab.FloatingActionButton;
+import com.github.johnpersano.supertoasts.SuperToast;
+import com.github.johnpersano.supertoasts.util.Style;
 import com.saga.R;
 import com.saga.adapter.ItemUniversalAdapter;
 import com.saga.beans.EmbalagemBeans;
@@ -139,7 +141,7 @@ public class ConferenciaItemNotaEntradaActivity extends AppCompatActivity {
             if(retornoEscanerCodigoBarra.getContents() == null) {
                 Log.d("SAGA", "Cancelled scan - ConferenciaItemNotaEntradaActivity");
 
-                Toast.makeText(this, "Cancelado", Toast.LENGTH_LONG).show();
+                SuperToast.create(ConferenciaItemNotaEntradaActivity.this, getResources().getString(R.string.cancelado), SuperToast.Duration.LONG, Style.getStyle(Style.RED, SuperToast.Animations.POPUP)).show();
 
             } else {
                 Log.d("SAGA", "Scanned - ConferenciaItemNotaEntradaActivity");
@@ -217,7 +219,7 @@ public class ConferenciaItemNotaEntradaActivity extends AppCompatActivity {
                         atualizarProdutos.execute();
 
                     } else {
-                        Toast.makeText(ConferenciaItemNotaEntradaActivity.this, "Digite algum valor válido em alguns dos campos.", Toast.LENGTH_LONG).show();
+                        SuperToast.create(ConferenciaItemNotaEntradaActivity.this, getResources().getString(R.string.digite_algum_valor_valido_em_aguns_campos), SuperToast.Duration.LONG, Style.getStyle(Style.BLUE, SuperToast.Animations.POPUP)).show();
                     }
 
                 }
@@ -403,7 +405,8 @@ public class ConferenciaItemNotaEntradaActivity extends AppCompatActivity {
 
                 (ConferenciaItemNotaEntradaActivity.this).runOnUiThread(new Runnable() {
                     public void run() {
-                        Toast.makeText(ConferenciaItemNotaEntradaActivity.this, getResources().getString(R.string.atualizado_sucesso), Toast.LENGTH_LONG).show();
+                        SuperToast.create(ConferenciaItemNotaEntradaActivity.this, getResources().getString(R.string.atualizado_sucesso), SuperToast.Duration.LONG, Style.getStyle(Style.GREEN, SuperToast.Animations.POPUP)).show();
+
                     }
                 });
             }

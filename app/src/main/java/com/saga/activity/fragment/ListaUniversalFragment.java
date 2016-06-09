@@ -1,19 +1,14 @@
 package com.saga.activity.fragment;
 
 import android.app.Activity;
-import android.app.SearchManager;
 import android.content.ContentValues;
-import android.content.Context;
 import android.content.Intent;
+import android.media.MediaPlayer;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
-import android.provider.SearchRecentSuggestions;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.text.InputType;
 import android.util.Log;
@@ -25,7 +20,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.Button;
@@ -33,23 +27,27 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.afollestad.materialdialogs.MaterialDialog;
+import com.github.johnpersano.supertoasts.SuperToast;
+import com.github.johnpersano.supertoasts.util.Style;
 import com.saga.R;
 import com.saga.activity.ConferenciaItemNotaEntradaActivity;
+import com.saga.activity.ListaProdutoActivity;
 import com.saga.activity.ListaUniversalActivity;
 import com.saga.adapter.ItemUniversalAdapter;
 import com.saga.beans.ConferenciaItemBeans;
 import com.saga.beans.ItemNotaFiscalEntradaBeans;
 import com.saga.beans.ItemRomaneioBeans;
+import com.saga.beans.ItemSaidaBeans;
 import com.saga.beans.NotaFiscalEntradaBeans;
 import com.saga.beans.RomaneioBeans;
+import com.saga.beans.SaidaBeans;
 import com.saga.funcoes.FuncoesPersonalizadas;
 import com.saga.funcoes.rotinas.ConferenciaItemRotinas;
 import com.saga.funcoes.rotinas.NotaFiscalEntradaRotinas;
 import com.saga.funcoes.rotinas.RomaneioRotinas;
-import com.saga.provider.SearchableProvider;
+import com.saga.funcoes.rotinas.SaidaRotinas;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -75,11 +73,14 @@ public class ListaUniversalFragment extends Fragment {
     private Toolbar toolbarRodape;
     private String nomeAba = null;
     private Boolean pesquisando = false;
-    private int idEntrada, idRomaneio;
+    private int idEntrada, idRomaneio, idSaida;
     private int mPreviousVisibleItem;
     private List<NotaFiscalEntradaBeans> listaNotaFiscalEntradaSelecionado;
     private List<ItemNotaFiscalEntradaBeans> listaItemNotaFiscalEntradaSelecionado;
+    private List<ItemSaidaBeans> listaItemSaidaSelecionado;
     private int totalItemSelecionado = 0;
+    private double fatorProdutoPesquisado = -1;
+
 
     @Nullable
     @Override
@@ -102,6 +103,7 @@ public class ListaUniversalFragment extends Fragment {
             nomeAba = parametro.getString(ListaUniversalActivity.KEY_NOME_ABA);
             idEntrada = (parametro.get("ID_AEAENTRA") != null) ? parametro.getInt("ID_AEAENTRA") : -1;
             idRomaneio = (parametro.get("ID_AEAROMAN") != null) ? parametro.getInt("ID_AEAROMAN") : -1;
+            idSaida = (parametro.get("ID_AEASAIDA") != null) ? parametro.getInt("ID_AEASAIDA") : -1;
         }
 
         // Checa qual eh o tipo de tela
@@ -116,7 +118,7 @@ public class ListaUniversalFragment extends Fragment {
             if (pesquisando == false) {
                 // informa que ja esta sendo pesquisado alguma coisa
                 pesquisando = true;
-                LoaderLista carregarLista = new LoaderLista(null, null);
+                LoaderLista carregarLista = new LoaderLista(null);
                 carregarLista.execute();
             }
 
@@ -137,7 +139,7 @@ public class ListaUniversalFragment extends Fragment {
                     // Pega o id da entrada
                     paramentros.put("ID_AEAENTRA", idEntrada);
 
-                    LoaderLista carregarLista = new LoaderLista(null, paramentros);
+                    LoaderLista carregarLista = new LoaderLista(null);
                     carregarLista.execute();
                 }
 
@@ -167,7 +169,7 @@ public class ListaUniversalFragment extends Fragment {
             if (pesquisando == false){
                 // informa que ja esta sendo pesquisado alguma coisa
                 pesquisando = true;
-                LoaderLista carregarLista = new LoaderLista(null, null);
+                LoaderLista carregarLista = new LoaderLista(null);
                 carregarLista.execute();
             }
         } else if (tipoTela == ListaUniversalActivity.TELA_ITEM_ROMANEIO){
@@ -181,7 +183,34 @@ public class ListaUniversalFragment extends Fragment {
             if (pesquisando == false){
                 // informa que ja esta sendo pesquisado alguma coisa
                 pesquisando = true;
-                LoaderLista carregarLista = new LoaderLista(null, null);
+                LoaderLista carregarLista = new LoaderLista(null);
+                carregarLista.execute();
+            }
+        } else if (tipoTela == ListaUniversalActivity.TELA_PEDIDO){
+            // Mosta a tollbar na tela de lista de nota
+            toolbarRodape.setVisibility(View.VISIBLE);
+
+            // Atualiza o titulo da toolbar cabecalho
+            ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(getContext().getResources().getString(R.string.lista_pedidos));
+
+            if (pesquisando == false){
+                // informa que ja esta sendo pesquisado alguma coisa
+                pesquisando = true;
+                LoaderLista carregarLista = new LoaderLista(null);
+                carregarLista.execute();
+            }
+
+        } else if (tipoTela == ListaUniversalActivity.TELA_ITEM_PEDIDO){
+            // Mosta a tollbar na tela de lista de nota
+            toolbarRodape.setVisibility(View.VISIBLE);
+
+            // Atualiza o titulo da toolbar cabecalho
+            ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(getContext().getResources().getString(R.string.itens_pedido));
+
+            if (pesquisando == false){
+                // informa que ja esta sendo pesquisado alguma coisa
+                pesquisando = true;
+                LoaderLista carregarLista = new LoaderLista(null);
                 carregarLista.execute();
             }
         }
@@ -229,6 +258,34 @@ public class ListaUniversalFragment extends Fragment {
                     intent.putExtras(bundle);
 
                     startActivity(intent);
+
+                } else if (tipoTela == ListaUniversalActivity.TELA_PEDIDO) {
+                    SaidaBeans saidaBeans = (SaidaBeans) parent.getItemAtPosition(position);
+
+                    Bundle bundle = new Bundle();
+                    bundle.putInt(ListaUniversalActivity.KEY_TIPO_TELA, ListaUniversalActivity.TELA_ITEM_PEDIDO);
+                    bundle.putInt("ID_AEASAIDA", saidaBeans.getIdSaida());
+
+                    // Abre a tela de detalhes do produto
+                    Intent intent = new Intent(getContext(), ListaUniversalActivity.class);
+                    intent.putExtras(bundle);
+
+                    // Abre a nova tela
+                    startActivity(intent);
+
+                } else if (tipoTela == ListaUniversalActivity.TELA_ITEM_ROMANEIO) {
+                    ItemRomaneioBeans itemRomaneioBeans = (ItemRomaneioBeans) parent.getItemAtPosition(position);
+
+                    Bundle bundle = new Bundle();
+                    bundle.putInt(ListaUniversalActivity.KEY_TIPO_TELA, ListaUniversalActivity.TELA_ITEM_PEDIDO);
+                    bundle.putInt("ID_AEASAIDA", itemRomaneioBeans.getSaida().getIdSaida());
+
+                    // Abre a tela de detalhes do produto
+                    Intent intent = new Intent(getContext(), ListaUniversalActivity.class);
+                    intent.putExtras(bundle);
+
+                    // Abre a nova tela
+                    startActivity(intent);
                 }
 
             }
@@ -251,6 +308,12 @@ public class ListaUniversalFragment extends Fragment {
                     if (listaItemNotaFiscalEntradaSelecionado == null) {
                         listaItemNotaFiscalEntradaSelecionado = new ArrayList<ItemNotaFiscalEntradaBeans>();
                     }
+                } else if (tipoTela == ListaUniversalActivity.TELA_ITEM_PEDIDO){
+
+                    // Checa se a lista de selecionado eh nula
+                    if (listaItemSaidaSelecionado == null){
+                        listaItemSaidaSelecionado = new ArrayList<ItemSaidaBeans>();
+                    }
                 }
                 // Checa se o comando eh de selecao ou descelecao
                 if (checked) {
@@ -269,6 +332,12 @@ public class ListaUniversalFragment extends Fragment {
                         listaItemNotaFiscalEntradaSelecionado.add(adapterListagem.getListaItemNotaFiscalEntrada().get(position));
                         // Marca o adapter para mudar a cor do fundo
                         adapterListagem.getListaItemNotaFiscalEntrada().get(position).setTagSelectContext(true);
+
+                    } else if (tipoTela == ListaUniversalActivity.TELA_ITEM_PEDIDO){
+
+                        listaItemSaidaSelecionado.add(adapterListagem.getListaItemSaida().get(position));
+                        // Marca o adapter para mudar a cor do fundo
+                        adapterListagem.getListaItemSaida().get(position).setTagSelectContext(true);
                     }
                     adapterListagem.notifyDataSetChanged();
                 } else {
@@ -311,6 +380,24 @@ public class ListaUniversalFragment extends Fragment {
                             }
                             i++;
                         }
+                    } else if (tipoTela == ListaUniversalActivity.TELA_ITEM_PEDIDO){
+
+                        // Passa por todos os itens da nota fiscal
+                        while (i < listaItemSaidaSelecionado.size()){
+
+                            // Checar se a posicao desmarcada esta na lista
+                            if (listaItemSaidaSelecionado.get(i).getIdSaida() == adapterListagem.getListaItemSaida().get(position).getIdSaida()){
+                                // Remove a posicao da lista de selecao
+                                listaItemSaidaSelecionado.remove(i);
+                                // Diminui o total de itens selecionados
+                                totalItemSelecionado = totalItemSelecionado - 1;
+
+                                // Mar o adapter para mudar a cor do fundo
+                                adapterListagem.getListaItemSaida().get(position).setTagSelectContext(false);
+                                adapterListagem.notifyDataSetChanged();
+                            }
+                            i++;
+                        }
                     }
                 }
                 // Checa se tem mais de um item selecionados
@@ -336,6 +423,9 @@ public class ListaUniversalFragment extends Fragment {
 
                 } else if (tipoTela == ListaUniversalActivity.TELA_ITEM_NOTA_FISCAL_ENTRADA){
                     menuContextual.inflate(R.menu.menu_lista_universal_fragment_item_nota_fiscal_entrada_context, menu);
+
+                } else if (tipoTela == ListaUniversalActivity.TELA_ITEM_PEDIDO){
+                    menuContextual.inflate(R.menu.menu_lista_universal_fragment_item_pedido_context, menu);
                 }
                 // Esconde a toolbar
                 toolbarRodape.setVisibility(View.GONE);
@@ -367,76 +457,20 @@ public class ListaUniversalFragment extends Fragment {
                         break;
 
                     case R.id.menu_lista_universal_fragment_item_nota_fiscal_entrada_context_marcar_conferido:
-
-                        // Checa se realmente eh a tela de itens de notas
-                        if (tipoTela == ListaUniversalActivity.TELA_ITEM_NOTA_FISCAL_ENTRADA) {
-
-                            // Passa por todos os itens selecionados
-                            for (int i = 0; i < listaItemNotaFiscalEntradaSelecionado.size(); i++) {
-
-                                FuncoesPersonalizadas funcoes = new FuncoesPersonalizadas(getContext());
-
-                            /*if (listaItemNotaFiscalEntradaSelecionado.get(i).getQuantidadeConferido() == listaItemNotaFiscalEntradaSelecionado.get(i).getQuantidade()){
-                                // Mostra uma mensagem dizendo que ja foi tudo conferido
-                                Toast.makeText( getContext(),
-                                                getContext().getResources().getString(R.string.ja_foi_conferido_o_item) +
-                                                        listaItemNotaFiscalEntradaSelecionado.get(i).getEstoque().getProdutoLoja().getProduto().getDescricaoProduto(),
-                                                Toast.LENGTH_LONG ).show();
-
-                            } else */
-                                Date curDate = new Date();
-                                SimpleDateFormat format = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
-                                String DateToStr = format.format(curDate);
-
-                                // Pega os dados do item na nota
-                                final ConferenciaItemBeans conferenciaItemBeans = new ConferenciaItemBeans();
-                                conferenciaItemBeans.setIdItemEntrada(listaItemNotaFiscalEntradaSelecionado.get(i).getIdItemNotaFiscalEntrada());
-                                conferenciaItemBeans.setDataConferencia(DateToStr);
-                                conferenciaItemBeans.setBaixaPorConferencia("0");
-
-                                // Marca os campos aos quais nao eh pra tra ter valor, ou seja, tem que ser nulo
-                                conferenciaItemBeans.setIdItemConferencia(-1);
-                                conferenciaItemBeans.setIdItemRomaneio(-1);
-                                conferenciaItemBeans.setIdItemsaida(-1);
-
-                                // Checa se nos paramentros esta permitido digitar a quantidade conferida
-                                if (funcoes.getValorXml("DigitaQuantidade").equalsIgnoreCase("S")) {
-                                    String texto =
-                                             "Codigo: " + listaItemNotaFiscalEntradaSelecionado.get(i).getEstoque().getProdutoLoja().getProduto().getCodigoEstrutural()
-                                            +"\nMarca: " + listaItemNotaFiscalEntradaSelecionado.get(i).getEstoque().getProdutoLoja().getProduto().getMarca().getDescricao()
-                                            +"\nRef.: " + listaItemNotaFiscalEntradaSelecionado.get(i).getEstoque().getProdutoLoja().getProduto().getReferencia();
-
-                                    new MaterialDialog.Builder(getActivity())
-                                            .title(listaItemNotaFiscalEntradaSelecionado.get(i).getEstoque().getProdutoLoja().getProduto().getDescricaoProduto())
-                                            .content(texto)
-                                            .inputRangeRes(1, 10, R.color.vermelho)
-                                            .inputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_CLASS_NUMBER)
-                                            .input(getContext().getResources().getString(R.string.digitar_quantidade), null, new MaterialDialog.InputCallback() {
-                                                @Override
-                                                public void onInput(MaterialDialog dialog, CharSequence input) {
-
-                                                    conferenciaItemBeans.setQuantidade(Long.parseLong(input.toString()));
-
-                                                    ConferirItemNotaFiscalEntrada conferirItemNotaFiscalEntrada = new ConferirItemNotaFiscalEntrada(conferenciaItemBeans);
-                                                    conferirItemNotaFiscalEntrada.execute();
-                                                }
-                                            }).show();
-
-                                    // Caso nao seja permitido digitar a quantidade permitida entao eh pego a quantidade total do item de entrada
-                                } else {
-                                    conferenciaItemBeans.setQuantidade((long) listaItemNotaFiscalEntradaSelecionado.get(i).getQuantidade());
-
-                                    ConferirItemNotaFiscalEntrada conferirItemNotaFiscalEntrada = new ConferirItemNotaFiscalEntrada(conferenciaItemBeans);
-                                    conferirItemNotaFiscalEntrada.execute();
-                                }
-
-
-                            } // Fim for
-                        }
+                        // Marca o item com a quantidade conferida
+                        marcarItemComoConferido();
 
                         // Fecha o modo de menu context
                         onDestroyActionMode(mode);
                         //mode.
+                        break;
+
+                    case R.id.menu_lista_universal_fragment_item_pedido_context_marcar_conferido:
+                        // Marca o item conferido
+                        marcarItemComoConferido();
+
+                        // Fecha o modo de menu context
+                        onDestroyActionMode(mode);
 
                         break;
                     default:
@@ -451,7 +485,7 @@ public class ListaUniversalFragment extends Fragment {
 
                 // Checa o tipo de tela
                 if (tipoTela == ListaUniversalActivity.TELA_NOTA_FISCAL_ENTRADA) {
-                    // Passa por tota a lista de orcamento/pedido
+                    // Passa por tota a lista de nota fiscal de entrada
                     for (int i = 0; i < adapterListagem.getListaNotaFiscalEntrada().size(); i++) {
                         // Mar o adapter para mudar a cor do fundo
                         adapterListagem.getListaNotaFiscalEntrada().get(i).setTagSelectContext(false);
@@ -462,12 +496,18 @@ public class ListaUniversalFragment extends Fragment {
                     toolbarRodape.setVisibility(View.VISIBLE);
 
                 } else if (tipoTela == ListaUniversalActivity.TELA_ITEM_NOTA_FISCAL_ENTRADA){
-                    // Passa por tota a lista de orcamento/pedido
+                    // Passa por tota a lista de itens da nota de entrada
                     for (int i = 0; i < adapterListagem.getListaItemNotaFiscalEntrada().size(); i++) {
                         // Mar o adapter para mudar a cor do fundo
                         adapterListagem.getListaItemNotaFiscalEntrada().get(i).setTagSelectContext(false);
                     }
                     listaItemNotaFiscalEntradaSelecionado = null;
+
+                } else if (tipoTela == ListaUniversalActivity.TELA_ITEM_PEDIDO){
+                    // Passa por toda a lista de itens do pedido
+                    for (int i=0; i< adapterListagem.getListaItemSaida().size(); i++){
+                        adapterListagem.getListaItemSaida().get(i).setTagSelectContext(false);
+                    }
                 }
                 mode.finish();
                 adapterListagem.notifyDataSetChanged();
@@ -488,7 +528,7 @@ public class ListaUniversalFragment extends Fragment {
             public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
 
                 // Checa se eh a tela de lista de nota fiscal
-                if ( (tipoTela == ListaUniversalActivity.TELA_NOTA_FISCAL_ENTRADA) || (tipoTela == ListaUniversalActivity.TELA_ROMANEIO) || (tipoTela == ListaUniversalActivity.TELA_ITEM_ROMANEIO) ) {
+                //if ( (tipoTela == ListaUniversalActivity.TELA_NOTA_FISCAL_ENTRADA) || (tipoTela == ListaUniversalActivity.TELA_ROMANEIO) || (tipoTela == ListaUniversalActivity.TELA_ITEM_ROMANEIO) ) {
 
                     // Funcao para ocultar o float button quando rolar a lista de orcamento/pedido
                     if (firstVisibleItem > mPreviousVisibleItem) {
@@ -500,7 +540,7 @@ public class ListaUniversalFragment extends Fragment {
                         toolbarRodape.setVisibility(View.VISIBLE);
                     }
                     mPreviousVisibleItem = firstVisibleItem;
-                }
+                //}
             }
         });
 
@@ -519,7 +559,11 @@ public class ListaUniversalFragment extends Fragment {
                         pesquisarDigitadoEditTextPesquisar();
 
                     } else {
-                        Toast.makeText(getContext(), getContext().getResources().getString(R.string.campo_pesquisa_vazio), Toast.LENGTH_LONG).show();
+                        SuperToast.create(getContext(), getResources().getString(R.string.campo_pesquisa_vazio), SuperToast.Duration.LONG, Style.getStyle(Style.GRAY, SuperToast.Animations.POPUP)).show();
+
+                        // Executa o preenchimento da lista
+                        LoaderLista loaderLista = new LoaderLista(null);
+                        loaderLista.execute();
                     }
                 }
                 return false;
@@ -550,21 +594,57 @@ public class ListaUniversalFragment extends Fragment {
     }
 
 
-
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         ZxingOrientResult retornoEscanerCodigoBarra = ZxingOrient.parseActivityResult(requestCode, resultCode, data);
+
+        // Checa a requisicao
+        if (requestCode == ListaUniversalActivity.REQUISICAO_DADOS_PRODUTOS){
+            // Checa se retornou com sucesso
+            if (resultCode == ListaUniversalActivity.RETORNO_ITEM_SAIDA_CONFERIDO_OK){
+                // Pega o id passado por parametro
+                fatorProdutoPesquisado = (data.getExtras().getDouble(ListaUniversalActivity.KEY_RETORNO_FATOR_PESQUISADO));
+                int idItemSaida = (data.getExtras().getInt(ListaUniversalActivity.KEY_ID_ITEM_SAIDA));
+
+                // Checa se retornou algum codigo de produto
+                if ( (fatorProdutoPesquisado > 0) && (idItemSaida > 0) ){
+
+                    for (int i = 0; i < adapterListagem.getListaItemSaida().size(); i++){
+
+                        // Checa se o id item saida Retornado existe na lista
+                        if (adapterListagem.getListaItemSaida().get(i).getIdItemSaida() == idItemSaida){
+
+                            // Checa se a lista de selecionados esta instanciada
+                            if (listaItemSaidaSelecionado == null){
+                                listaItemSaidaSelecionado = new ArrayList<ItemSaidaBeans>();
+                            }
+                            // Adiciona o item saida em uma lista de selecionados
+                            listaItemSaidaSelecionado.add(adapterListagem.getListaItemSaida().get(i));
+                            // Para o laco for
+                            break;
+                        }
+                    }
+                    marcarItemComoConferido();
+                }
+            } else if (resultCode == ListaUniversalActivity.RETORNO_ITEM_SAIDA_CONFERIDO_NEG){
+                // Emite um som de erro
+                MediaPlayer somSucesso = MediaPlayer.create(getContext(), R.raw.effect_alert_error);
+                somSucesso.start();
+
+                SuperToast.create(getContext(), getResources().getString(R.string.nao_foi_localizado_produto), SuperToast.Duration.LONG, Style.getStyle(Style.RED, SuperToast.Animations.FLYIN)).show();
+            }
+        }
 
         if(retornoEscanerCodigoBarra != null) {
             // Checha se retornou algum dado
             if(retornoEscanerCodigoBarra.getContents() == null) {
                 Log.d("SAGA", "Cancelled scan - ListaUniversalFragment");
 
-                Toast.makeText(getContext(), "Cancelado", Toast.LENGTH_LONG).show();
+                SuperToast.create(getContext(), getResources().getString(R.string.escaneamento_cancelado), SuperToast.Duration.SHORT, Style.getStyle(Style.RED, SuperToast.Animations.FLYIN)).show();
 
             } else {
                 Log.d("SAGA", "Scanned - ListaUniversalFragment");
-                //Toast.makeText(this, "Scanned: " + retornoEscanerCodigoBarra.getContents(), Toast.LENGTH_LONG).show();
+                //SuperToast.create(getContext(), getResources().getString(R.string.campo_pesquisa_vazio), SuperToast.Duration.LONG, Style.getStyle(Style.GRAY, SuperToast.Animations.POPUP)).show();
 
                 editPesquisar.setText(retornoEscanerCodigoBarra.getContents());
                 // Posiciona o cursor para o final do texto
@@ -586,7 +666,7 @@ public class ListaUniversalFragment extends Fragment {
         inflater.inflate(R.menu.menu_lista_universal, menu);
 
         // Configuracao associando item de pesquisa com a SearchView
-        SearchManager searchManager = (SearchManager) getContext().getSystemService(Context.SEARCH_SERVICE);
+        /*SearchManager searchManager = (SearchManager) getContext().getSystemService(Context.SEARCH_SERVICE);
 
         final SearchView searchView;
         final MenuItem itemMenuSearch = menu.findItem(R.id.menu_lista_universal_search_pesquisar);
@@ -684,10 +764,27 @@ public class ListaUniversalFragment extends Fragment {
                 return false;
             }
         });
-        searchView.setQueryHint(getResources().getString(R.string.pesquisar));
+        searchView.setQueryHint(getResources().getString(R.string.pesquisar));*/
     }
 
 
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        switch (item.getItemId()){
+
+            case R.id.menu_lista_universal_atualizar:
+                // Recarrega a listagem de acordo com o tipo de tela
+                LoaderLista recarregarLista = new LoaderLista(null);
+                recarregarLista.execute();
+                break;
+
+            default:
+                break;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
 
     private void recuperarCampos(){
         listViewListagem = (ListView) viewOrcamento.findViewById(R.id.fragment_pagina_lista_universal_list_view_listagem);
@@ -745,24 +842,66 @@ public class ListaUniversalFragment extends Fragment {
         } else if (tipoTela == ListaUniversalActivity.TELA_ITEM_ROMANEIO){
             // Checa se eh apenas numeros
             if (apenasNumeros){
-                where += " (AEAITROM.ID_AEAITROM = " + editPesquisar.getText().toString() + ") OR (AEASAIDA.NUMERO = " + editPesquisar.getText().toString() + ")";
+                where += " (AEAITROM.ID_AEAITROM = " + editPesquisar.getText().toString() + ") OR (AEASAIDA.NUMERO = " + editPesquisar.getText().toString() + ") OR " +
+                         " (AEASAIDA.ID_AEASAIDA = " + editPesquisar.getText().toString() + ") ";
 
             } else {
-                where += " (AEASAIDA.NOME_CLIENTE LIKE '%" + editPesquisar.getText().toString() + "%') OR (AEASAIDA.BAIRRO_CLIENTE LIKE '%" + editPesquisar.getText().toString() + "%') " +
-                         " (CFAESTAD.DESCRICAO LIKE '%" + editPesquisar.getText().toString() + "%') OR (CFACIDAD.DESCRICAO LIKE '%" + editPesquisar.getText().toString() + "%') " +
-                         " (CFAESTAD.UF LIKE '%" + editPesquisar.getText().toString() + "%') ";
+                where += " (AEASAIDA.NOME_CLIENTE LIKE '%" + editPesquisar.getText().toString() + "%') OR (AEASAIDA.BAIRRO_CLIENTE LIKE '%" + editPesquisar.getText().toString() + "%') OR " +
+                         " (CFAESTAD.DESCRICAO LIKE '%" + editPesquisar.getText().toString() + "%') OR (CFACIDAD.DESCRICAO LIKE '%" + editPesquisar.getText().toString() + "%') OR " +
+                         " (CFAESTAD.UF LIKE '%" + editPesquisar.getText().toString() + "%') OR (AEASERIE.CODIGO LIKE '%" +editPesquisar.getText().toString() + "%')";
+            }
+
+        } else if (tipoTela == ListaUniversalActivity.TELA_PEDIDO){
+            // Checa se eh apenas numeros
+            if (apenasNumeros){
+                where += " (AEASAIDA.ID_AEASAIDA = " + editPesquisar.getText().toString() + ") OR (AEASAIDA.NUMERO = " + editPesquisar.getText().toString() + ") ";
+
+            } else {
+                where += " (AEASAIDA.NOME_CLIENTE LIKE '%" + editPesquisar.getText().toString() + "%') OR (AEASAIDA.CPF_CGC_CLIENTE LIKE '%"+ editPesquisar.getText().toString() + "%') OR " +
+                         " (AEASAIDA.ENDERECO_CLIENTE LIKE '%" + editPesquisar.getText().toString() + "'%) OR (AEASAIDA.BAIRRO_CLIENTE LIKE '%" + editPesquisar.getText().toString() + "%') OR " +
+                         " (AEASAIDA.FONE_CLIENTE LIKE '%" + editPesquisar.getText().toString() + "%') OR (CFAESTAD.UF LIKE %'" + editPesquisar.getText().toString() + "%') OR " +
+                         " (CFAESTAD.DESCRICAO LIKE '%" + editPesquisar.getText().toString() + "%') OR (CFACIDAD.DESCRICAO LIKE '%" + editPesquisar.getText().toString() + "%') ";
+            }
+
+        } else if (tipoTela == ListaUniversalActivity.TELA_ITEM_PEDIDO){
+
+            if (apenasNumeros){
+                // Checa se o numero eh maior que 8 digitos
+                if (editPesquisar.getText().length() >= 8){
+                    where += "AEAEMBAL_PRODU.CODIGO_BARRAS = '" + editPesquisar.getText().toString() + "'";
+
+                } else {
+                    where += "(AEAPRODU.CODIGO_ESTRUTURAL = '" + editPesquisar.getText().toString() + "') OR (AEAPRODU.ID_AEAPRODU = " + editPesquisar.getText().toString() + ")";
+                }
+
+            } else {
+                where += "(AEAPRODU.DESCRICAO LIKE '%" +editPesquisar.getText().toString() + "%') OR (AEAMARCA.DESCRICAO LIKE '%" + editPesquisar.getText().toString() + "%')";
+            }
+
+            Intent intent = new Intent(getContext(), ListaProdutoActivity.class);
+            intent.putExtra(ListaProdutoActivity.KEY_TELA_CHAMADA, ListaProdutoActivity.TELA_LISTA_UNIVERSAL_FRAGMENT_PESQUISA_ITEM_SAIDA);
+            intent.putExtra(ListaProdutoActivity.KEY_ID_SAIDA, idSaida);
+            intent.putExtra(ListaProdutoActivity.KEY_TEXTO_PESQUISA, editPesquisar.getText().toString());
+            intent.putExtra(ListaProdutoActivity.KEY_WHERE_PESQUISA, where);
+            // Abre a activity aquardando uma resposta
+            startActivityForResult(intent, ListaUniversalActivity.REQUISICAO_DADOS_PRODUTOS);
+        }
+
+        if ((tipoTela == ListaUniversalActivity.TELA_NOTA_FISCAL_ENTRADA) || (tipoTela == ListaUniversalActivity.TELA_ROMANEIO) ||
+                (tipoTela == ListaUniversalActivity.TELA_ITEM_ROMANEIO) || (tipoTela == ListaUniversalActivity.TELA_PEDIDO)) {
+
+            // Seca se nao esta pesquisando
+            if (pesquisando == false) {
+                // Marca que esta pesquisando
+                pesquisando = true;
+
+                // Executa o preenchimento da lista
+                LoaderLista loaderLista = new LoaderLista(where);
+                loaderLista.execute();
             }
         }
-        // Seca se nao esta pesquisando
-        if (pesquisando == false) {
-            // Marca que esta pesquisando
-            pesquisando = true;
-
-            // Executa o preenchimento da lista
-            LoaderLista loaderLista = new LoaderLista(where, null);
-            loaderLista.execute();
-        }
     }
+
 
     public void onLoaderLista(){
 
@@ -775,31 +914,152 @@ public class ListaUniversalFragment extends Fragment {
                     // informa que ja esta sendo pesquisado alguma coisa
                     pesquisando = true;
 
-                    ContentValues paramentros = new ContentValues();
+                    //ContentValues paramentros = new ContentValues();
                     // Pega o id da entrada
-                    paramentros.put("ID_AEAENTRA", idEntrada);
+                    //paramentros.put("ID_AEAENTRA", idEntrada);
 
-                    LoaderLista carregarLista = new LoaderLista(null, paramentros);
+                    LoaderLista carregarLista = new LoaderLista(null);
                     carregarLista.execute();
                 }
 
+            }
+        } else if (tipoTela == ListaUniversalActivity.TELA_ITEM_PEDIDO){
+
+            if ( (idSaida > 0) && (pesquisando == false) ){
+                LoaderLista carregarLista = new LoaderLista(null);
+                carregarLista.execute();
             }
         }
     }
 
 
-    public class LoaderLista extends AsyncTask<Void, Void, Void> {
-        ContentValues parametros;
+    private void marcarItemComoConferido(){
+
+        Date curDate = new Date();
+        SimpleDateFormat format = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
+        String DateToStr = format.format(curDate);
+
+        // Pega os dados do item na nota
+        final ConferenciaItemBeans conferenciaItemBeans = new ConferenciaItemBeans();
+        conferenciaItemBeans.setDataConferencia(DateToStr);
+        conferenciaItemBeans.setBaixaPorConferencia("0");
+
+        // Marca os campos aos quais nao eh pra tra ter valor, ou seja, tem que ser nulo
+        conferenciaItemBeans.setIdItemConferencia(-1);
+        conferenciaItemBeans.setIdItemRomaneio(-1);
+        conferenciaItemBeans.setIdItemsaida(-1);
+        conferenciaItemBeans.setIdItemEntrada(-1);
+
+        String texto = "";
+
+        FuncoesPersonalizadas funcoes = new FuncoesPersonalizadas(getContext());
+
+        // Checa se realmente eh a tela de itens de notas
+        if (tipoTela == ListaUniversalActivity.TELA_ITEM_NOTA_FISCAL_ENTRADA) {
+
+            // Passa por todos os itens selecionados
+            for (int i = 0; i < listaItemNotaFiscalEntradaSelecionado.size(); i++) {
+
+                texto =
+                        "Codigo: " + listaItemNotaFiscalEntradaSelecionado.get(i).getEstoque().getProdutoLoja().getProduto().getCodigoEstrutural()
+                        +"\nMarca: " + listaItemNotaFiscalEntradaSelecionado.get(i).getEstoque().getProdutoLoja().getProduto().getMarca().getDescricao()
+                        +"\nRef.: " + listaItemNotaFiscalEntradaSelecionado.get(i).getEstoque().getProdutoLoja().getProduto().getReferencia();
+
+                // Adiciona o id do item de entrada
+                conferenciaItemBeans.setIdItemEntrada(listaItemNotaFiscalEntradaSelecionado.get(i).getIdItemNotaFiscalEntrada());
+
+                // Checa se nos paramentros esta permitido digitar a quantidade conferida
+                if (funcoes.getValorXml("DigitaQuantidade").equalsIgnoreCase("S")) {
+
+                    new MaterialDialog.Builder(getActivity())
+                            .title(listaItemNotaFiscalEntradaSelecionado.get(i).getEstoque().getProdutoLoja().getProduto().getDescricaoProduto())
+                            .content(texto)
+                            .inputRangeRes(1, 10, R.color.vermelho)
+                            .inputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_CLASS_NUMBER)
+                            .input(getContext().getResources().getString(R.string.digitar_quantidade), null, new MaterialDialog.InputCallback() {
+                                @Override
+                                public void onInput(MaterialDialog dialog, CharSequence input) {
+
+                                    conferenciaItemBeans.setQuantidade(input.toString());
+                                    ConferirItemAsyncTask conferirItemAsyncTask = new ConferirItemAsyncTask(conferenciaItemBeans);
+                                    conferirItemAsyncTask.execute();
+                                }
+                            }).show();
+
+
+                // Caso nao seja permitido digitar a quantidade entao eh pego a quantidade retornada da pesquisa do produto na saida
+                }else {
+                    conferenciaItemBeans.setQuantidade(""+listaItemNotaFiscalEntradaSelecionado.get(i).getQuantidade());
+
+                    ConferirItemAsyncTask conferirItemAsyncTask = new ConferirItemAsyncTask(conferenciaItemBeans);
+                    conferirItemAsyncTask.execute();
+                }
+
+            } // Fim for
+        } else if (tipoTela == ListaUniversalActivity.TELA_ITEM_PEDIDO){
+
+            // Passa por todos os itens selecionados
+            for (int i = 0; i < listaItemSaidaSelecionado.size(); i++) {
+
+                texto =
+                        "Codigo: " + listaItemSaidaSelecionado.get(i).getEstoque().getProdutoLoja().getProduto().getCodigoEstrutural()
+                        +"\nMarca: " + listaItemSaidaSelecionado.get(i).getEstoque().getProdutoLoja().getProduto().getMarca().getDescricao()
+                        +"\nRef.: " + listaItemSaidaSelecionado.get(i).getEstoque().getProdutoLoja().getProduto().getReferencia();
+                // Adiciona o id do item do pedido
+                conferenciaItemBeans.setIdItemsaida(listaItemSaidaSelecionado.get(i).getIdItemSaida());
+
+                // Checa se nos paramentros esta permitido digitar a quantidade conferida
+                if (funcoes.getValorXml("DigitaQuantidade").equalsIgnoreCase("S")) {
+
+                    new MaterialDialog.Builder(getActivity())
+                            .title(listaItemSaidaSelecionado.get(i).getEstoque().getProdutoLoja().getProduto().getDescricaoProduto())
+                            .content(texto)
+                            .inputRangeRes(1, 10, R.color.vermelho)
+                            .inputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_CLASS_NUMBER)
+                            .input(getContext().getResources().getString(R.string.digitar_quantidade), null, new MaterialDialog.InputCallback() {
+                                @Override
+                                public void onInput(MaterialDialog dialog, CharSequence input) {
+
+                                    conferenciaItemBeans.setQuantidade(input.toString());
+
+                                    ConferirItemAsyncTask conferirItemAsyncTask = new ConferirItemAsyncTask(conferenciaItemBeans);
+                                    conferirItemAsyncTask.execute();
+                                }
+                            }).show();
+
+                // Caso nao seja permitido digitar a quantidade permitida entao eh pego a quantidade retornada da pesquisa
+                } else if (fatorProdutoPesquisado > 0){
+
+                    conferenciaItemBeans.setQuantidade(""+fatorProdutoPesquisado);
+                    ConferirItemAsyncTask conferirItemAsyncTask = new ConferirItemAsyncTask(conferenciaItemBeans);
+                    conferirItemAsyncTask.execute();
+
+                // Caso nao seja permitido digitar a quantidade permitida entao eh pego a quantidade total do item do pedido
+                } else {
+                    conferenciaItemBeans.setQuantidade(""+listaItemSaidaSelecionado.get(i).getQuantidade());
+
+                    ConferirItemAsyncTask conferirItemAsyncTask = new ConferirItemAsyncTask(conferenciaItemBeans);
+                    conferirItemAsyncTask.execute();
+                }
+            }
+            // retira o fator do produto pesquisado
+            fatorProdutoPesquisado = -1;
+        }
+    } // FIm marcarItemConferido
+
+
+    private class LoaderLista extends AsyncTask<Void, Void, Void> {
         String where = "";
         // Cria uma vareavel para salvar a lista de nota fiscal de entrada
         List<NotaFiscalEntradaBeans> listaNotaFiscalEntrada;
         List<ItemNotaFiscalEntradaBeans> listaItemNotaFiscalEntrada;
         List<RomaneioBeans> listaRomaneio;
         List<ItemRomaneioBeans> listaItemRomaneio;
+        List<SaidaBeans> listaSaida;
+        List<ItemSaidaBeans> listaItemSaida;
 
-        public LoaderLista(String where, ContentValues parametros) {
+        public LoaderLista(String where) {
             this.where = (where != null) ? where.toUpperCase() : null;
-            this.parametros = parametros;
 
             if (tipoTela == ListaUniversalActivity.TELA_NOTA_FISCAL_ENTRADA) {
                 listaNotaFiscalEntrada = new ArrayList<NotaFiscalEntradaBeans>();
@@ -812,6 +1072,13 @@ public class ListaUniversalFragment extends Fragment {
 
             } else if (tipoTela == ListaUniversalActivity.TELA_ITEM_ROMANEIO){
                 listaItemRomaneio = new ArrayList<ItemRomaneioBeans>();
+
+            } else if (tipoTela == ListaUniversalActivity.TELA_PEDIDO){
+                listaSaida = new ArrayList<SaidaBeans>();
+
+            } else if (tipoTela == ListaUniversalActivity.TELA_ITEM_PEDIDO){
+                listaItemSaida = new ArrayList<ItemSaidaBeans>();
+
             }
         }
 
@@ -856,8 +1123,6 @@ public class ListaUniversalFragment extends Fragment {
                         // Seta a lista de produtos no adapter
                         adapterListagem.setListaNotaFiscalEntrada(listaNotaFiscalEntrada);
 
-                    } else {
-                        mensagemNaoEncontramos();
                     }
 
                 // Checa a tela eh de itens de nota fiscal de entrada
@@ -865,13 +1130,13 @@ public class ListaUniversalFragment extends Fragment {
 
                     // Checa se eh uma aba de itens da notas nao conferidos
                     if (nomeAba.contains("Conferir")){
-                        listaItemNotaFiscalEntrada = notaFiscalEntradaRotinas.listaItemNotaFiscalEntrada(parametros.getAsInteger("ID_AEAENTRA"),
+                        listaItemNotaFiscalEntrada = notaFiscalEntradaRotinas.listaItemNotaFiscalEntrada(idEntrada,
                                                                                                          NotaFiscalEntradaRotinas.SIM,
                                                                                                          where,
                                                                                                          NotaFiscalEntradaRotinas.SEM_CONFERIR,
                                                                                                          progressBarStatus);
                     }else if (nomeAba.contains("Conferido")){
-                        listaItemNotaFiscalEntrada = notaFiscalEntradaRotinas.listaItemNotaFiscalEntrada(parametros.getAsInteger("ID_AEAENTRA"),
+                        listaItemNotaFiscalEntrada = notaFiscalEntradaRotinas.listaItemNotaFiscalEntrada(idEntrada,
                                                                                                          NotaFiscalEntradaRotinas.SIM,
                                                                                                          where,
                                                                                                          NotaFiscalEntradaRotinas.CONFERIDO,
@@ -909,8 +1174,6 @@ public class ListaUniversalFragment extends Fragment {
                         // Seta a lista de romaneio
                         adapterListagem.setListaRomaneio(listaRomaneio);
 
-                    } else {
-                        mensagemNaoEncontramos();
                     }
 
                 } else if (tipoTela == ListaUniversalActivity.TELA_ITEM_ROMANEIO){
@@ -934,6 +1197,50 @@ public class ListaUniversalFragment extends Fragment {
                         adapterListagem = new ItemUniversalAdapter(getContext(), ItemUniversalAdapter.LISTA_ITEM_ROMANEIO);
                         // Seta a lista de romaneio
                         adapterListagem.setListaItemRomaneio(listaItemRomaneio);
+                    }
+
+                } else if (tipoTela == ListaUniversalActivity.TELA_PEDIDO){
+                    SaidaRotinas saidaRotinas = new SaidaRotinas(getContext());
+                    // Informa o tipo de conexao com o banco de dados que eh para ser feito
+                    saidaRotinas.setTipoConexao((!funcoes.getValorXml("TipoConexao").equalsIgnoreCase(funcoes.NAO_ENCONTRADO)) ? funcoes.getValorXml("TipoConexao"): "I");
+
+                    // Checa se eh uma aba de itens da notas nao conferidos
+                    if (nomeAba.contains("Conferir")){
+
+                        listaSaida = saidaRotinas.listaSaida(where, SaidaRotinas.SEM_CONFERIR, progressBarStatus);
+
+                    } else if (nomeAba.contains("Conferido")){
+
+                        listaSaida = saidaRotinas.listaSaida(where, SaidaRotinas.CONFERIDO, progressBarStatus);
+                    }
+
+                    if ( (listaSaida != null) && (listaSaida.size() > 0) ){
+                        // Instancia o adapter para sair o tipo de listagem em romaneio
+                        adapterListagem = new ItemUniversalAdapter(getContext(), ItemUniversalAdapter.LISTA_PEDIDO);
+                        // Seta a lista de romaneio
+                        adapterListagem.setListaSaida(listaSaida);
+                    }
+
+                } else if (tipoTela == ListaUniversalActivity.TELA_ITEM_PEDIDO){
+                    SaidaRotinas saidaRotinas = new SaidaRotinas(getContext());
+                    // Informa o tipo de conexao com o banco de dados que eh para ser feito
+                    saidaRotinas.setTipoConexao((!funcoes.getValorXml("TipoConexao").equalsIgnoreCase(funcoes.NAO_ENCONTRADO)) ? funcoes.getValorXml("TipoConexao"): "I");
+
+                    // Checa se eh uma aba de itens da notas nao conferidos
+                    if (nomeAba.contains("Conferir")){
+
+                        listaItemSaida = saidaRotinas.listaItemSaida(idSaida, SaidaRotinas.NAO, where, SaidaRotinas.SEM_CONFERIR, progressBarStatus);
+
+                    } else if (nomeAba.contains("Conferido")){
+
+                        listaItemSaida = saidaRotinas.listaItemSaida(idSaida, SaidaRotinas.NAO, where, SaidaRotinas.CONFERIDO, progressBarStatus);
+                    }
+
+                    if ( (listaItemSaida != null) && (listaItemSaida.size() > 0) ){
+                        // Instancia o adapter para sair o tipo de listagem em romaneio
+                        adapterListagem = new ItemUniversalAdapter(getContext(), ItemUniversalAdapter.LISTA_ITEM_PEDIDO);
+                        // Seta a lista de romaneio
+                        adapterListagem.setListaItemSaida(listaItemSaida);
                     }
                 }
 
@@ -981,12 +1288,76 @@ public class ListaUniversalFragment extends Fragment {
                 if ( (listaRomaneio != null) && (listaRomaneio.size() > 0) ){
                     listViewListagem.setAdapter(adapterListagem);
 
+                    // Checa se tem apenas um item na lista
+                    if (listaRomaneio.size() == 1){
+                        // Pega os dados do romaneio da lista
+                        RomaneioBeans romaneio = (RomaneioBeans) listViewListagem.getItemAtPosition(0);
+
+                        Bundle bundle = new Bundle();
+                        bundle.putInt(ListaUniversalActivity.KEY_TIPO_TELA, ListaUniversalActivity.TELA_ITEM_ROMANEIO);
+                        bundle.putInt("ID_AEAROMAN", romaneio.getIdRomaneio());
+
+                        // Abre a tela de detalhes do produto
+                        Intent intent = new Intent(getContext(), ListaUniversalActivity.class);
+                        intent.putExtras(bundle);
+
+                        startActivity(intent);
+                    }
+
                 } else {
                     listViewListagem.setVisibility(View.GONE);
                     textMensagem.setVisibility(View.VISIBLE);
                 }
             } else if (tipoTela == ListaUniversalActivity.TELA_ITEM_ROMANEIO){
                 if ( (listaItemRomaneio != null) && (listaItemRomaneio.size() > 0) ){
+                    listViewListagem.setAdapter(adapterListagem);
+
+                    // Checa se tem apenas um item na lista, se tiver apenas um item na lista entao abre outra tela com os dados do item
+                    if (listaItemRomaneio.size() == 1){
+
+                        ItemRomaneioBeans itemRomaneioBeans = (ItemRomaneioBeans) listViewListagem.getItemAtPosition(0);
+
+                        Bundle bundle = new Bundle();
+                        bundle.putInt(ListaUniversalActivity.KEY_TIPO_TELA, ListaUniversalActivity.TELA_ITEM_PEDIDO);
+                        bundle.putInt("ID_AEASAIDA", itemRomaneioBeans.getSaida().getIdSaida());
+
+                        // Abre a tela de detalhes do produto
+                        Intent intent = new Intent(getContext(), ListaUniversalActivity.class);
+                        intent.putExtras(bundle);
+
+                        // Abre a nova tela
+                        startActivity(intent);
+                    }
+
+                } else {
+                    listViewListagem.setVisibility(View.GONE);
+                    textMensagem.setVisibility(View.VISIBLE);
+                }
+            } else if (tipoTela == ListaUniversalActivity.TELA_PEDIDO){
+                if ( (listaSaida != null) && (listaSaida.size() > 0) ){
+                    listViewListagem.setAdapter(adapterListagem);
+
+                    // Checa se tem apenas um item na lista, se tiver apenas um item na lista entao abre outra tela com os dados do item
+                    if (listaSaida.size() == 1){
+                        SaidaBeans saidaBeans = (SaidaBeans) listViewListagem.getItemAtPosition(0);
+
+                        Bundle bundle = new Bundle();
+                        bundle.putInt(ListaUniversalActivity.KEY_TIPO_TELA, ListaUniversalActivity.TELA_ITEM_PEDIDO);
+                        bundle.putInt("ID_AEASAIDA", saidaBeans.getIdSaida());
+
+                        // Abre a tela de detalhes do produto
+                        Intent intent = new Intent(getContext(), ListaUniversalActivity.class);
+                        intent.putExtras(bundle);
+
+                        // Abre a nova tela
+                        startActivity(intent);
+                    }
+                } else {
+                    listViewListagem.setVisibility(View.GONE);
+                    textMensagem.setVisibility(View.VISIBLE);
+                }
+            } else if (tipoTela == ListaUniversalActivity.TELA_ITEM_PEDIDO){
+                if ( (listaItemSaida != null) && (listaItemSaida.size() > 0) ){
                     listViewListagem.setAdapter(adapterListagem);
 
                 } else {
@@ -1043,10 +1414,10 @@ public class ListaUniversalFragment extends Fragment {
                 ((Activity) getContext()).runOnUiThread(new Runnable() {
                     public void run() {
 
-                        Toast.makeText(getContext(), getResources().getString(R.string.atualizado_sucesso), Toast.LENGTH_LONG).show();
+                        SuperToast.create(getContext(), getResources().getString(R.string.atualizado_sucesso), SuperToast.Duration.SHORT, Style.getStyle(Style.GREEN, SuperToast.Animations.FLYIN)).show();
 
                         // Atualiza a lista de notas de entrada
-                        LoaderLista carregarListaNotas = new LoaderLista(null, null);
+                        LoaderLista carregarListaNotas = new LoaderLista(null);
                         carregarListaNotas.execute();
                     }
                 });
@@ -1064,11 +1435,11 @@ public class ListaUniversalFragment extends Fragment {
     } // Fim AtualizarNotaFiscalEntrada
 
 
-    private class ConferirItemNotaFiscalEntrada extends  AsyncTask<Void, Void, Void>{
+    private class ConferirItemAsyncTask extends  AsyncTask<Void, Void, Void>{
 
         private ConferenciaItemBeans conferenciaItemBeans;
 
-        public ConferirItemNotaFiscalEntrada(ConferenciaItemBeans conferenciaItemBeans) {
+        public ConferirItemAsyncTask(ConferenciaItemBeans conferenciaItemBeans) {
             this.conferenciaItemBeans = conferenciaItemBeans;
         }
 
@@ -1084,12 +1455,17 @@ public class ListaUniversalFragment extends Fragment {
             ConferenciaItemRotinas conferenciaItemRotinas = new ConferenciaItemRotinas(getContext());
 
             // Checa se atualizou com sucesso
-            if ( conferenciaItemRotinas.insertEmbalagem(conferenciaItemBeans, progressBarStatus, null) ){
+            if ( conferenciaItemRotinas.insertConferenciaItem(conferenciaItemBeans, progressBarStatus, null) ){
 
                 ((Activity) getContext()).runOnUiThread(new Runnable() {
                     public void run() {
 
-                        Toast.makeText(getContext(), getResources().getString(R.string.inserido_com_sucesso), Toast.LENGTH_LONG).show();
+                        SuperToast.create(getContext(), getResources().getString(R.string.conferencia_inserido_sucesso), SuperToast.Duration.LONG, Style.getStyle(Style.GREEN, SuperToast.Animations.FLYIN)).show();
+
+
+                        // Emite um som de positivo
+                        MediaPlayer somSucesso = MediaPlayer.create(getContext(), R.raw.effect_alert_positive);
+                        somSucesso.start();
                     }
                 });
             }
@@ -1103,24 +1479,16 @@ public class ListaUniversalFragment extends Fragment {
             // Oculta a barra de status
             progressBarStatus.setVisibility(View.GONE);
 
-            // Checa se tem algum id de entrada relacionado
-            if (idEntrada > 0) {
-
-                if (pesquisando == false) {
-                    // informa que ja esta sendo pesquisado alguma coisa
-                    pesquisando = true;
-
-                    ContentValues paramentros = new ContentValues();
-                    // Pega o id da entrada
-                    paramentros.put("ID_AEAENTRA", idEntrada);
-
-                    LoaderLista carregarLista = new LoaderLista(null, paramentros);
-                    carregarLista.execute();
-                }
+            // Desmonta toda a lista de selecionados
+            if (listaItemSaidaSelecionado != null){
+                listaItemSaidaSelecionado = null;
             }
+
+            LoaderLista carregarLista = new LoaderLista(null);
+            carregarLista.execute();
+
         }
 
-    } // Fim ConferirItemNotaFiscalEntrada
-
+    } // Fim ConferirItemAsyncTask
 
 }

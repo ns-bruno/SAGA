@@ -26,8 +26,8 @@ import java.util.Vector;
  */
 public class RomaneioRotinas extends Rotinas {
 
-    public static final int CONFERIDO = 999;
-    public static final int SEM_CONFERIR = 888;
+    //public static final int CONFERIDO = 999;
+    //public static final int SEM_CONFERIR = 888;
 
     public RomaneioRotinas(Context context) {
         super(context);
@@ -73,7 +73,8 @@ public class RomaneioRotinas extends Rotinas {
             if (where != null) {
                 sql += " AND (" + where + ")";
             }
-
+            // Coloca uma ordem
+            sql += " ORDER BY AEAROMAN.DT_ROMANEIO DESC, AEAROMAN.NUMERO DESC ";
             if (tipoConexao.equalsIgnoreCase("W")){
                 WSSisInfoWebservice webserviceSisInfo = new WSSisInfoWebservice(context);
                 final Vector<SoapObject> listaRoman = webserviceSisInfo.executarSelectWebservice(sql, WSSisInfoWebservice.FUNCTION_SELECT_LISTA_ROMANEIO, null);

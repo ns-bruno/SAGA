@@ -20,13 +20,18 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import com.github.johnpersano.supertoasts.SuperToast;
+import com.github.johnpersano.supertoasts.util.Style;
 import com.saga.R;
 import com.saga.adapter.ItemUniversalAdapter;
 import com.saga.beans.FotosBeans;
+import com.saga.beans.ItemSaidaBeans;
 import com.saga.beans.ProdutoLojaBeans;
 import com.saga.funcoes.FuncoesPersonalizadas;
 import com.saga.funcoes.rotinas.FotoRotinas;
 import com.saga.funcoes.rotinas.ProdutoRotinas;
+import com.saga.funcoes.rotinas.Rotinas;
+import com.saga.funcoes.rotinas.SaidaRotinas;
 
 import java.util.List;
 
@@ -45,14 +50,17 @@ public class ListaProdutoActivity extends AppCompatActivity {
     private Toolbar toolbarRodape;
     private EditText editTextPesquisarProduto;
     private Button buttonEscanearCodigoBarras;
-    private int telaChamada = -1;
+    private int telaChamada = -1,
+                idSaida = -1;
     private int mPreviousVisibleItem;
     private String wherePesquisa, textoPesquisa;
     private boolean pesquisando = false;
-    public static final int LOCACAO_PRODUTO_ACTIVITY = 0;
+    public static final int TELA_LOCACAO_PRODUTO_ACTIVITY = 0,
+                            TELA_LISTA_UNIVERSAL_FRAGMENT_PESQUISA_ITEM_SAIDA = 1;
     public static final String KEY_TELA_CHAMADA = "keyTelaChamada",
                                KEY_WHERE_PESQUISA = "keyWherePesquisa",
-                               KEY_TEXTO_PESQUISA = "keyTextoPesquisa";
+                               KEY_TEXTO_PESQUISA = "keyTextoPesquisa",
+                               KEY_ID_SAIDA = "ID_SAIDA";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,6 +78,7 @@ public class ListaProdutoActivity extends AppCompatActivity {
             this.telaChamada = intentParametro.getInt(KEY_TELA_CHAMADA);
             this.wherePesquisa = intentParametro.getString(KEY_WHERE_PESQUISA);
             this.textoPesquisa = intentParametro.getString(KEY_TEXTO_PESQUISA);
+            this.idSaida = (intentParametro.containsKey(KEY_ID_SAIDA) ? intentParametro.getInt(KEY_ID_SAIDA) : -1);
         }
 
         if (telaChamada == -1){
@@ -77,7 +86,13 @@ public class ListaProdutoActivity extends AppCompatActivity {
             toolbarRodape.setVisibility(View.VISIBLE);
             toolbarCabecalho.setTitle(getResources().getString(R.string.lista_produto));
 
-        } else if (telaChamada == LOCACAO_PRODUTO_ACTIVITY){
+        } else if (telaChamada == TELA_LOCACAO_PRODUTO_ACTIVITY){
+            toolbarCabecalho.setTitle(textoPesquisa);
+
+            LoaderProdutos carregarProduto = new LoaderProdutos(ListaProdutoActivity.this, wherePesquisa);
+            carregarProduto.execute();
+
+        } else if (telaChamada == TELA_LISTA_UNIVERSAL_FRAGMENT_PESQUISA_ITEM_SAIDA){
             toolbarCabecalho.setTitle(textoPesquisa);
 
             LoaderProdutos carregarProduto = new LoaderProdutos(ListaProdutoActivity.this, wherePesquisa);
@@ -103,7 +118,7 @@ public class ListaProdutoActivity extends AppCompatActivity {
                     startActivity(intent);
 
                 // Checa se que chamou esta tela foi a tela de locacao de produtos
-                } else if (telaChamada == LOCACAO_PRODUTO_ACTIVITY){
+                } else if (telaChamada == TELA_LOCACAO_PRODUTO_ACTIVITY){
                     Bundle idProduto = new Bundle();
                     idProduto.putInt("ID_AEAPLOJA", produtoLojaBeans.getIdProdutoLoja());
 
@@ -185,7 +200,7 @@ public class ListaProdutoActivity extends AppCompatActivity {
             if(retornoEscanerCodigoBarra.getContents() == null) {
                 Log.d("SAGA", "Cancelled scan - ListaProdutoActivity");
 
-                Toast.makeText(this, getResources().getString(R.string.escaneamento_cancelado), Toast.LENGTH_LONG).show();
+                SuperToast.create(ListaProdutoActivity.this, getResources().getString(R.string.escaneamento_cancelado), SuperToast.Duration.LONG, Style.getStyle(Style.RED, SuperToast.Animations.POPUP)).show();
 
             } else {
                 Log.d("SAGA", "Scanned - ListaProdutoActivity");
@@ -291,7 +306,7 @@ public class ListaProdutoActivity extends AppCompatActivity {
             carregarProdutos.execute();
 
         } else {
-            Toast.makeText(ListaProdutoActivity.this, "Campos de pesquisa vazio.", Toast.LENGTH_LONG).show();
+            SuperToast.create(ListaProdutoActivity.this, getResources().getString(R.string.campo_pesquisa_vazio), SuperToast.Duration.LONG, Style.getStyle(Style.GRAY, SuperToast.Animations.POPUP)).show();
         }
     } // Fim pesquisaProduto
 
@@ -316,6 +331,7 @@ public class ListaProdutoActivity extends AppCompatActivity {
         String where = "";
         Context context;
         List<ProdutoLojaBeans> listaProdutoLoja;
+        List<ItemSaidaBeans> listaItemSaida;
 
         public LoaderProdutos(Context context, String where) {
             this.where = where;
@@ -332,15 +348,30 @@ public class ListaProdutoActivity extends AppCompatActivity {
         @Override
         protected Void doInBackground(Void... params) {
 
-            ProdutoRotinas produtoRotinas = new ProdutoRotinas(context);
-            listaProdutoLoja = produtoRotinas.selectListaProdutoLojaResumido(where, progressBarStatus);
+            if (telaChamada == TELA_LISTA_UNIVERSAL_FRAGMENT_PESQUISA_ITEM_SAIDA){
+                SaidaRotinas saidaRotinas = new SaidaRotinas(context);
+                // Pesquisa o item de acordo com os dados passados por parametro
+                listaItemSaida = saidaRotinas.listaItemSaida(idSaida, SaidaRotinas.SIM, where, SaidaRotinas.SEM_CONFERIR, progressBarStatus);
 
-            // Checa se retornou alguma coisa
-            if (listaProdutoLoja != null && listaProdutoLoja.size() > 0){
-                // Instancia a classe adapter
-                adapterListaProdutos = new ItemUniversalAdapter(context, ItemUniversalAdapter.LISTA_PRODUTO_LOJA);
-                // Envia a lista de produto para o adapter
-                adapterListaProdutos.setListaProdutoLoja(listaProdutoLoja);
+                // Checa se retornou alguma coisa
+                if ( (listaItemSaida != null) && (listaItemSaida.size() > 0) ){
+                    // Instancia a classe de adapter
+                    adapterListaProdutos = new ItemUniversalAdapter(context, ItemUniversalAdapter.LISTA_ITEM_PEDIDO);
+                    // Envia a lista de produto para o adapter
+                    adapterListaProdutos.setListaItemSaida(listaItemSaida);
+                }
+
+            } else {
+                ProdutoRotinas produtoRotinas = new ProdutoRotinas(context);
+                listaProdutoLoja = produtoRotinas.selectListaProdutoLojaResumido(where, progressBarStatus);
+
+                // Checa se retornou alguma coisa
+                if (listaProdutoLoja != null && listaProdutoLoja.size() > 0) {
+                    // Instancia a classe adapter
+                    adapterListaProdutos = new ItemUniversalAdapter(context, ItemUniversalAdapter.LISTA_PRODUTO_LOJA);
+                    // Envia a lista de produto para o adapter
+                    adapterListaProdutos.setListaProdutoLoja(listaProdutoLoja);
+                }
             }
             return null;
         } // Fim doInBackground
@@ -350,7 +381,7 @@ public class ListaProdutoActivity extends AppCompatActivity {
 
             if ((listaProdutoLoja != null) && (listaProdutoLoja.size() > 0)) {
 
-                if (telaChamada == LOCACAO_PRODUTO_ACTIVITY){
+                if (telaChamada == TELA_LOCACAO_PRODUTO_ACTIVITY){
 
                     // Checa se retornou apena um produto
                     if (listaProdutoLoja.size() == 1){
@@ -381,6 +412,37 @@ public class ListaProdutoActivity extends AppCompatActivity {
                     LoaderImagemProdutos carregarImagemProduto = new LoaderImagemProdutos(context);
                     carregarImagemProduto.execute();
                 }
+            } else if ( (listaItemSaida != null) && (listaItemSaida.size() > 0) ){
+
+                if (telaChamada == TELA_LISTA_UNIVERSAL_FRAGMENT_PESQUISA_ITEM_SAIDA){
+                    // Checa se retornou apena um produto
+                    if (listaItemSaida.size() == 1){
+
+                        Bundle retorno = new Bundle();
+                        retorno.putDouble(ListaUniversalActivity.KEY_RETORNO_FATOR_PESQUISADO, listaItemSaida.get(0).getFatorProdutoPesquisado());
+                        retorno.putInt(ListaUniversalActivity.KEY_ID_ITEM_SAIDA, listaItemSaida.get(0).getIdItemSaida());
+
+                        // Cria uma intent para returnar um valor para activity ProdutoLista
+                        Intent returnIntent = new Intent();
+                        returnIntent.putExtras(retorno);
+
+                        setResult(ListaUniversalActivity.RETORNO_ITEM_SAIDA_CONFERIDO_OK, returnIntent);
+
+                        finish();
+                    } else {
+                        // Preenche a listView com os produtos buscados
+                        listViewListaProduto.setAdapter(adapterListaProdutos);
+
+                        LoaderImagemProdutos carregarImagemProduto = new LoaderImagemProdutos(context);
+                        carregarImagemProduto.execute();
+                    }
+                }
+            } else if (telaChamada == TELA_LISTA_UNIVERSAL_FRAGMENT_PESQUISA_ITEM_SAIDA){
+
+                // Caso nao tenha retornado nada na lista e ainda seja chamada de tela de item de saida, entao retorna negativo
+                setResult(ListaUniversalActivity.RETORNO_ITEM_SAIDA_CONFERIDO_NEG);
+
+                finish();
             }
             //tirando o ProgressBar da nossa tela
             progressBarStatus.setVisibility(View.GONE);
@@ -417,6 +479,24 @@ public class ListaProdutoActivity extends AppCompatActivity {
                             if ((fotoProduto != null) && (fotoProduto.getFotos().length > 0)){
                                 // Atualiza o adapte com a foto do produto
                                 adapterListaProdutos.getListaProdutoLoja().get(i).getProduto().setImagemProduto(fotoProduto);
+                            }
+                        }
+                        // Envia um sinal para o adapter atualizar
+                        ((Activity) ListaProdutoActivity.this).runOnUiThread(new Runnable() {
+                            public void run() {
+                                adapterListaProdutos.notifyDataSetChanged();
+                            }
+                        });
+                    } else if (adapterListaProdutos.getListaItemSaida().size() > 0){
+
+                        for (int i = 0; i < adapterListaProdutos.getListaItemSaida().size(); i++){
+                            FotoRotinas fotoRotinas = new FotoRotinas(context);
+
+                            FotosBeans fotoProduto = fotoRotinas.fotoIdProtudo("" + adapterListaProdutos.getListaItemSaida().get(i).getEstoque().getProdutoLoja().getProduto().getIdProduto());
+                            // Checa se tem alguma foto
+                            if ((fotoProduto != null) && (fotoProduto.getFotos().length > 0)){
+                                // Atualiza o adapte com a foto do produto
+                                adapterListaProdutos.getListaItemSaida().get(i).getEstoque().getProdutoLoja().getProduto().setImagemProduto(fotoProduto);
 
                             }
                         }

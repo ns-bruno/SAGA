@@ -19,6 +19,8 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.github.johnpersano.supertoasts.SuperToast;
+import com.github.johnpersano.supertoasts.util.Style;
 import com.saga.R;
 import com.saga.adapter.ItemUniversalAdapter;
 import com.saga.beans.AtivoBeans;
@@ -89,7 +91,7 @@ public class CadastroEmbalagemActivity extends AppCompatActivity {
                             .initiateScan();
 
                 } else {
-                    Toast.makeText(CadastroEmbalagemActivity.this, "Não conseguimos achar o codigo do produto.", Toast.LENGTH_LONG).show();
+                    SuperToast.create(CadastroEmbalagemActivity.this, getResources().getString(R.string.nao_conseguimos_achar_codigo_produto), SuperToast.Duration.LONG, Style.getStyle(Style.RED, SuperToast.Animations.POPUP)).show();
                 }
             }
         });
@@ -105,7 +107,7 @@ public class CadastroEmbalagemActivity extends AppCompatActivity {
             // Checha se retornou algum dado
             if(retornoEscanerCodigoBarra.getContents() == null) {
                 Log.d("SAGA", "Cancelled scan - CadastroEmbalagemActivity");
-                Toast.makeText(this, "Cancelado", Toast.LENGTH_LONG).show();
+                SuperToast.create(CadastroEmbalagemActivity.this, getResources().getString(R.string.cancelado), SuperToast.Duration.LONG, Style.getStyle(Style.RED, SuperToast.Animations.POPUP)).show();
 
             } else {
                 Log.d("SAGA", "Scanned - CadastroEmbalagemActivity");
@@ -145,10 +147,10 @@ public class CadastroEmbalagemActivity extends AppCompatActivity {
                     EmbalagemBeans embalagem = new EmbalagemBeans();
                     embalagem.setIdUnidadeVenda(unidadeVenda.getIdUnidadeVenda());
                     embalagem.setReferencia(editReferencia.getText().toString());
-                    embalagem.setCodigoBarras(editCodigoBarras.getText().toString());
+                    embalagem.setCodigoBarras( (editCodigoBarras.getText().length() > 0) ? editCodigoBarras.getText().toString() : "null");
                     embalagem.setAtivo(ativo.getSimNao());
                     embalagem.setDecimais((!editCasasDecimais.getText().toString().equals("")) ? Integer.parseInt(editCasasDecimais.getText().toString()) : 0);
-                    embalagem.setDescricaoEmbalagem(editDescricao.getText().toString());
+                    embalagem.setDescricaoEmbalagem( (editDescricao.getText().length() > 0) ? editDescricao.getText().toString() : "null");
                     embalagem.setModulo((!editModulo.getText().toString().equals("")) ? Integer.parseInt(editModulo.getText().toString()) : 1);
 
                     // Executa uma rotina em background. Esta rotina esta logo abaixo.

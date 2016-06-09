@@ -24,9 +24,16 @@ public class ListaUniversalActivity extends AppCompatActivity {
     public static final int TELA_ROMANEIO = 0,
                             TELA_NOTA_FISCAL_ENTRADA = 1,
                             TELA_ITEM_NOTA_FISCAL_ENTRADA = 2,
-                            TELA_ITEM_ROMANEIO = 3;
+                            TELA_ITEM_ROMANEIO = 3,
+                            TELA_PEDIDO = 4,
+                            TELA_ITEM_PEDIDO = 5;
     public static final String KEY_TIPO_TELA = "KEY_TIPO_TELA";
     public static final String KEY_NOME_ABA = "KEY_NOME_ABA";
+    public static final int REQUISICAO_DADOS_PRODUTOS = 100,
+                            RETORNO_ITEM_SAIDA_CONFERIDO_OK = 200,
+                            RETORNO_ITEM_SAIDA_CONFERIDO_NEG = 201;
+    public static final String KEY_RETORNO_FATOR_PESQUISADO = "keyRetornoFatorP",
+                               KEY_ID_ITEM_SAIDA = "keyIdItemSaida";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,6 +54,7 @@ public class ListaUniversalActivity extends AppCompatActivity {
             dadosParametros.put(KEY_TIPO_TELA, tipoTela);
             dadosParametros.put("ID_AEAENTRA", (intentParametro.getInt("ID_AEAENTRA") > 0) ? intentParametro.getInt("ID_AEAENTRA") : -1);
             dadosParametros.put("ID_AEAROMAN", (intentParametro.getInt("ID_AEAROMAN") > 0) ? intentParametro.getInt("ID_AEAROMAN") : -1);
+            dadosParametros.put("ID_AEASAIDA", (intentParametro.getInt("ID_AEASAIDA") > 0) ? intentParametro.getInt("ID_AEASAIDA") : -1);
 
             // Verifica qual eh o tipo da tela
             if (tipoTela == TELA_NOTA_FISCAL_ENTRADA){
@@ -61,6 +69,13 @@ public class ListaUniversalActivity extends AppCompatActivity {
 
             } else if (tipoTela == TELA_ITEM_ROMANEIO){
                 toolbarCabecalho.setTitle(R.string.itens_romaneio);
+
+            } else if (tipoTela == TELA_PEDIDO){
+                toolbarCabecalho.setTitle(R.string.lista_pedidos);
+
+            } else if (tipoTela == TELA_ITEM_PEDIDO){
+                toolbarCabecalho.setTitle(R.string.itens_pedido);
+
             }
         }
 
@@ -99,7 +114,7 @@ public class ListaUniversalActivity extends AppCompatActivity {
                     ListaUniversalFragment fragmentConferir = (ListaUniversalFragment) listaUniversalTabulacaoAdapter.getRegisteredFragments(position);
 
                     if (fragmentConferir != null){
-                        //Bundle a = fragmentConferir.getArguments();
+                        fragmentConferir.onLoaderLista();
                     }
                 }
             }

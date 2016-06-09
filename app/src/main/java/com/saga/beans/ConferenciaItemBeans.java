@@ -12,7 +12,7 @@ public class ConferenciaItemBeans implements KvmSerializable {
 
     private int idItemConferencia, idItemsaida, idItemRomaneio, idItemEntrada;
     private String guid, dataAlt, dataConferencia, observacao, situacao, baixaPorConferencia;
-    private long quantidade;
+    private String quantidade;
 
     public int getIdItemConferencia() {
         return idItemConferencia;
@@ -94,11 +94,11 @@ public class ConferenciaItemBeans implements KvmSerializable {
         this.baixaPorConferencia = baixaPorConferencia;
     }
 
-    public long getQuantidade() {
+    public String getQuantidade() {
         return quantidade;
     }
 
-    public void setQuantidade(long quantidade) {
+    public void setQuantidade(String quantidade) {
         this.quantidade = quantidade;
     }
 
@@ -183,7 +183,7 @@ public class ConferenciaItemBeans implements KvmSerializable {
                 break;
 
             case 10:
-                this.quantidade = Long.parseLong(o.toString());
+                this.quantidade = o.toString();
                 break;
 
             default:
@@ -246,7 +246,8 @@ public class ConferenciaItemBeans implements KvmSerializable {
                 break;
 
             case 10:
-                propertyInfo.type = PropertyInfo.LONG_CLASS;
+                propertyInfo.type = PropertyInfo.STRING_CLASS;
+                //propertyInfo.type = Double.class;
                 propertyInfo.name = "quantidade";
                 break;
 

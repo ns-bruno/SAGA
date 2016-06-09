@@ -131,6 +131,9 @@ public class FuncoesPersonalizadas {
         // Acesso às informações de acordo com o tipo.
         String texto = prefs.getString(campo, NAO_ENCONTRADO);
 
+        if (texto.length() <= 0){
+            texto = NAO_ENCONTRADO;
+        }
         // Formata um string com todo o conteúdo separado por linha.
         return texto;
     } // FIm do selecionaValorXml

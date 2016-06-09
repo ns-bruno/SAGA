@@ -17,6 +17,7 @@
     <string name="romaneio">Romaneio</string>
     <string name="produtos">Produtos</string>
     <string name="pedido">Pedido</string>
+    <string name="lista_pedidos">Lista de Pedidos</string>
     <string name="orcamento">Orçamento</string>
     <string name="entrada">Entrada</string>
     <string name="separar">Separar</string>
@@ -90,7 +91,7 @@
     <string name="detalhes_produto">Detalhes do Produto</string>
     <string name="escanear_codigo_produto">Escanear o Código do Produto.</string>
     <string name="escanear_edereco_locacao">Escanear o Endereço/Locação</string>
-    <string name="nao_foir_informado_nenhuma_locacao">Não foi informado nenhum endereço/locação</string>
+    <string name="nao_foi_informado_nenhuma_locacao">Não foi informado nenhum endereço/locação</string>
     <string name="escaneamento_cancelado">Escaneamento Cancelado</string>
     <string name="campo_pesquisa_vazio">Campo de pesquisa vazio.</string>
     <string name="deletar">Deletar.</string>
@@ -101,9 +102,16 @@
     <string name="inserido_com_sucesso">Inserido com Sucesso.</string>
     <string name="ja_foi_conferido_o_item">Já foi conferido o item </string>
     <string name="lista_nota_fiscal_entrada">Lista de Nota Fiscal de Entrada</string>
-    <string name="lista_itens_nota_fiscal_entrada">Produtos da Nota Fiscal de Entrada</string>
+    <string name="lista_itens_nota_fiscal_entrada">Produtos da N.F. de Entrada</string>
     <string name="codigo_barras_invalido">Código de Barras Inválido</string>
     <string name="itens_romaneio">Itens do Romaneio</string>
+    <string name="atualizar">Atualizar</string>
+    <string name="itens_pedido">Itens do Pedido</string>
+    <string name="conferencia_inserido_sucesso">Conferência Inserida com Sucesso.</string>
+    <string name="nao_foi_localizado_produto">Não foi localizado o produto.</string>
+    <string name="cancelado">Cancelado</string>
+    <string name="nao_conseguimos_achar_codigo_produto">Não conseguimos achar código do produto</string>
+    <string name="digite_algum_valor_valido_em_aguns_campos">Digite algum valor válido em alguns dos campos</string>
 
     <string-array name="tab_nota_fiscal_entrada">
         <item>Conferir Entradas</item>
@@ -123,5 +131,15 @@
     <string-array name="tab_item_romaneio">
         <item>Itens a Conferir</item>
         <item>Itens Conferidos</item>
+    </string-array>
+
+    <string-array name="tab_pedido">
+        <item>Pedidos a Conferir</item>
+        <item>Pedidos Conferidos</item>
+    </string-array>
+
+    <string-array name="tab_item_pedido">
+        <item>Produtos a Conferir</item>
+        <item>Produtos Conferido</item>
     </string-array>
 </resources>

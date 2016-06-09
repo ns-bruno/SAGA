@@ -38,6 +38,8 @@ public class WSSisInfoWebservice {
     public static final String FUNCTION_SELECT_LISTA_ITEM_NOTA_FISCAL_ENTRADA = "selectItemNotaFiscalEntrada";
     public static final String FUNCTION_SELECT_LISTA_ROMANEIO = "selectRomaneio";
     public static final String FUNCTION_SELECT_LISTA_ITEM_ROMANEIO = "selectItemRomaneio";
+    public static final String FUNCTION_SELECT_LISTA_SAIDA = "selectSaida";
+    public static final String FUNCTION_SELECT_LISTA_ITEM_SAIDA = "selectItemSaida";
     public static final String FUNCTION_CHECA_USUARIO_SENHA = "checaUsuarioSenha";
     public static final String FUNCTION_SELECT_LISTA_EMBALAGEM = "selectListaEmbalagem";
     public static final String FUNCTION_DADOS_PRODUTOS_RESUMIDOS = "selectProdutoResumido";

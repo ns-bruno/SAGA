@@ -26,7 +26,7 @@ public class ConferenciaItemRotinas extends Rotinas {
         super(context);
     }
 
-    public boolean insertEmbalagem(ConferenciaItemBeans conferenciaItem, ProgressBar progressBarStatus, final TextView textStatus){
+    public boolean insertConferenciaItem(ConferenciaItemBeans conferenciaItem, ProgressBar progressBarStatus, final TextView textStatus){
         try{
             final FuncoesPersonalizadas funcoes = new FuncoesPersonalizadas(context);
 

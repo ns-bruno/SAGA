@@ -28,6 +28,8 @@ import android.widget.Toast;
 
 import com.afollestad.materialdialogs.AlertDialogWrapper;
 import com.afollestad.materialdialogs.MaterialDialog;
+import com.github.johnpersano.supertoasts.SuperToast;
+import com.github.johnpersano.supertoasts.util.Style;
 import com.saga.R;
 import com.saga.adapter.ItemUniversalAdapter;
 import com.saga.beans.EstoqueBeans;
@@ -237,7 +239,7 @@ public class LocacaoEnderecoActivity extends AppCompatActivity {
                             .initiateScan();
 
                 } else {
-                    Toast.makeText(LocacaoEnderecoActivity.this, getResources().getString(R.string.nao_foir_informado_nenhuma_locacao), Toast.LENGTH_LONG).show();
+                    SuperToast.create(LocacaoEnderecoActivity.this, getResources().getString(R.string.nao_foi_informado_nenhuma_locacao), SuperToast.Duration.LONG, Style.getStyle(Style.BLUE, SuperToast.Animations.POPUP)).show();
                 }
             }
         });
@@ -276,7 +278,7 @@ public class LocacaoEnderecoActivity extends AppCompatActivity {
             if(retornoEscanerCodigoBarra.getContents() == null) {
                 Log.d("SAGA", "Cancelled scan");
 
-                Toast.makeText(this, "Cancelado", Toast.LENGTH_LONG).show();
+                SuperToast.create(LocacaoEnderecoActivity.this, getResources().getString(R.string.cancelado), SuperToast.Duration.LONG, Style.getStyle(Style.RED, SuperToast.Animations.POPUP)).show();
 
             } else {
                 Log.d("SAGA", "Scanned - LocacaoEnderecoActivity");
@@ -439,14 +441,14 @@ public class LocacaoEnderecoActivity extends AppCompatActivity {
                         "(AEAPRODU.DESCRICAO_AUXILIAR LIKE '%" + textoPesquisa + "%') OR (AEAPRODU.CODIGO_BARRAS = '" + editTextPesquisaProduto.getText().toString() + "') ";
             }
 
-            intent.putExtra(ListaProdutoActivity.KEY_TELA_CHAMADA, ListaProdutoActivity.LOCACAO_PRODUTO_ACTIVITY);
+            intent.putExtra(ListaProdutoActivity.KEY_TELA_CHAMADA, ListaProdutoActivity.TELA_LOCACAO_PRODUTO_ACTIVITY);
             intent.putExtra(ListaProdutoActivity.KEY_TEXTO_PESQUISA, editTextPesquisaProduto.getText().toString());
             intent.putExtra(ListaProdutoActivity.KEY_WHERE_PESQUISA, whereProduto);
             // Abre a activity aquardando uma resposta
             startActivityForResult(intent, LocacaoProdutoActivity.REQUISICAO_DADOS_PRODUTOS);
 
         } else {
-            Toast.makeText(LocacaoEnderecoActivity.this, "Campo de pesquisa de produto vazio.", Toast.LENGTH_LONG).show();
+            SuperToast.create(LocacaoEnderecoActivity.this, getResources().getString(R.string.campo_pesquisa_vazio), SuperToast.Duration.LONG, Style.getStyle(Style.GRAY, SuperToast.Animations.POPUP)).show();
         }
     }
 

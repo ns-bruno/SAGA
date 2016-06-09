@@ -24,11 +24,13 @@ import com.saga.beans.EmbalagemBeans;
 import com.saga.beans.EstoqueBeans;
 import com.saga.beans.ItemNotaFiscalEntradaBeans;
 import com.saga.beans.ItemRomaneioBeans;
+import com.saga.beans.ItemSaidaBeans;
 import com.saga.beans.LocesBeans;
 import com.saga.beans.NotaFiscalEntradaBeans;
 import com.saga.beans.ProdutoBeans;
 import com.saga.beans.ProdutoLojaBeans;
 import com.saga.beans.RomaneioBeans;
+import com.saga.beans.SaidaBeans;
 import com.saga.beans.UnidadeVendaBeans;
 import com.saga.funcoes.FuncoesPersonalizadas;
 
@@ -52,7 +54,9 @@ public class ItemUniversalAdapter extends BaseAdapter {
                             LISTA_ESTOQUE = 7,
                             LISTA_LOCES = 8,
                             LISTA_ROMANEIO = 9,
-                            LISTA_ITEM_ROMANEIO = 10;
+                            LISTA_ITEM_ROMANEIO = 10,
+                            LISTA_PEDIDO = 11,
+                            LISTA_ITEM_PEDIDO = 12;
     private Context context;
     private int tipoItem;
     private List<NotaFiscalEntradaBeans> listaNotaFiscalEntrada;
@@ -66,6 +70,8 @@ public class ItemUniversalAdapter extends BaseAdapter {
     private List<LocesBeans> listaLoces;
     private List<RomaneioBeans> listaRomaneio;
     private List<ItemRomaneioBeans> listaItemRomaneio;
+    private List<SaidaBeans> listaSaida;
+    private List<ItemSaidaBeans> listaItemSaida;
 
     public ItemUniversalAdapter(Context context, int tipoItem) {
         this.context = context;
@@ -160,6 +166,22 @@ public class ItemUniversalAdapter extends BaseAdapter {
         this.listaItemRomaneio = listaItemRomaneio;
     }
 
+    public List<SaidaBeans> getListaSaida() {
+        return listaSaida;
+    }
+
+    public void setListaSaida(List<SaidaBeans> listaSaida) {
+        this.listaSaida = listaSaida;
+    }
+
+    public List<ItemSaidaBeans> getListaItemSaida() {
+        return listaItemSaida;
+    }
+
+    public void setListaItemSaida(List<ItemSaidaBeans> listaItemSaida) {
+        this.listaItemSaida = listaItemSaida;
+    }
+
     @Override
     public int getCount() {
         // Verifica o tipo de item
@@ -197,6 +219,12 @@ public class ItemUniversalAdapter extends BaseAdapter {
 
         } else if (this.tipoItem == LISTA_ITEM_ROMANEIO){
             return listaItemRomaneio.size();
+
+        } else if (this.tipoItem == LISTA_PEDIDO){
+            return listaSaida.size();
+
+        } else if (this.tipoItem == LISTA_ITEM_PEDIDO){
+            return listaItemSaida.size();
 
         }
         else {
@@ -242,6 +270,12 @@ public class ItemUniversalAdapter extends BaseAdapter {
         } else if (this.tipoItem == LISTA_ITEM_ROMANEIO){
             return listaItemRomaneio.get(position);
 
+        } else if (this.tipoItem == LISTA_PEDIDO){
+            return listaSaida.get(position);
+
+        } else if (this.tipoItem == LISTA_ITEM_PEDIDO){
+            return listaItemSaida.get(position);
+
         }
         else {
             return null;
@@ -285,6 +319,12 @@ public class ItemUniversalAdapter extends BaseAdapter {
 
         } else if (this.tipoItem == LISTA_ITEM_ROMANEIO){
             return listaItemRomaneio.get(position).getIdItemRomaneio();
+
+        } else if (this.tipoItem == LISTA_PEDIDO){
+            return listaSaida.get(position).getIdSaida();
+
+        } else if (this.tipoItem == LISTA_ITEM_PEDIDO){
+            return listaItemSaida.get(position).getIdItemSaida();
 
         }
         else {
@@ -610,7 +650,8 @@ public class ItemUniversalAdapter extends BaseAdapter {
 
             } else if (this.tipoItem == LISTA_ROMANEIO){
 
-                textDescricao.setText(listaRomaneio.get(position).getAreaRomaneio().getDescricaoAreas() + " - "  + listaRomaneio.get(position).getObservacaoRomaneio());
+                textDescricao.setText(listaRomaneio.get(position).getAreaRomaneio().getDescricaoAreas() + " - "  + listaRomaneio.get(position).getObservacaoRomaneio() + " - (" +
+                                      listaRomaneio.get(position).getNumero() + ")");
                 textAbaixoDescricaoEsqueda.setText("Dt.: " + funcoes.formataData(listaRomaneio.get(position).getDataRomaneio()));
                 textAbaixoDescricaoDireita.setText("Dt. Saí.:" + ( (listaRomaneio.get(position).getDataSaida().length() > 0) ?  funcoes.formataData(listaRomaneio.get(position).getDataSaida()) : "") );
                 textBottonEsquerdo.setText("Dt. Fecha.: " + ( (listaRomaneio.get(position).getDataFechamento().length() > 0) ?  funcoes.formataData(listaRomaneio.get(position).getDataFechamento()) : ""));
@@ -626,12 +667,86 @@ public class ItemUniversalAdapter extends BaseAdapter {
                 textAbaixoDescricaoEsqueda.setText(listaItemRomaneio.get(position).getSaida().getSerieSaida().getCodigo() + " - " + listaItemRomaneio.get(position).getSaida().getNumeroSaida());
                 textAbaixoDescricaoDireita.setText( ( (listaItemRomaneio.get(position).getSaida().getCidadeSaida().getDescricaoCidade().length() > 0) ?
                         listaItemRomaneio.get(position).getSaida().getCidadeSaida().getDescricaoCidade() : "") );
-                textBottonEsquerdo.setText("Vl.: " + listaItemRomaneio.get(position).getSaida().getValorTotalSaida());
+                textBottonEsquerdo.setText("Vl.: " + funcoes.arredondarValor(listaItemRomaneio.get(position).getSaida().getValorTotalSaida()));
                 textBottonEsquerdoDois.setText(" | " + ( (listaItemRomaneio.get(position).getSaida().getAtacadoVarejo().equalsIgnoreCase("0")) ? "Atac" : "Vare" ) );
                 textBottonDireito.setText( ( (listaItemRomaneio.get(position).getSaida().getBairroCliente().length() > 0) ?  listaItemRomaneio.get(position).getSaida().getBairroCliente() : "") );
 
                 viewRodape.setVisibility(View.INVISIBLE);
                 viewTopo.setVisibility(View.INVISIBLE);
+
+            } else if (this.tipoItem == LISTA_PEDIDO){
+
+                textDescricao.setText(listaSaida.get(position).getNomeCliente() + " (" + funcoes.formataDataHora(listaSaida.get(position).getDataCad()) + ")");
+                textAbaixoDescricaoEsqueda.setText(listaSaida.get(position).getSerieSaida().getCodigo() + " - " + listaSaida.get(position).getNumeroSaida());
+                textAbaixoDescricaoDireita.setText( ( (listaSaida.get(position).getCidadeSaida().getDescricaoCidade().length() > 0) ?
+                        listaSaida.get(position).getCidadeSaida().getDescricaoCidade() : "") );
+                textBottonEsquerdo.setText("Vl.: " + funcoes.arredondarValor(listaSaida.get(position).getValorTotalSaida()));
+                textBottonEsquerdoDois.setText(" | " + ( (listaSaida.get(position).getAtacadoVarejo().equalsIgnoreCase("0")) ? "Atac" : "Vare" ) );
+                textBottonDireito.setText( ( (listaSaida.get(position).getBairroCliente().length() > 0) ?  listaSaida.get(position).getBairroCliente() : "") );
+
+                viewRodape.setVisibility(View.INVISIBLE);
+                viewTopo.setVisibility(View.INVISIBLE);
+
+            } else if (this.tipoItem == LISTA_ITEM_PEDIDO){
+
+                textDescricao.setText(listaItemSaida.get(position).getEstoque().getProdutoLoja().getProduto().getDescricaoProduto() +
+                        " - " + listaItemSaida.get(position).getEstoque().getProdutoLoja().getProduto().getMarca().getDescricao() );
+                textAbaixoDescricaoEsqueda.setText("Cod.: " + listaItemSaida.get(position).getEstoque().getProdutoLoja().getProduto().getCodigoEstrutural());
+                textAbaixoDescricaoDireita.setText("Ref.: " + listaItemSaida.get(position).getEstoque().getProdutoLoja().getProduto().getReferencia());
+                textBottonEsquerdo.setText(listaItemSaida.get(position).getUnidadeVenda().getSigla());
+                textBottonEsquerdoDois.setText(" | " + funcoes.arredondarValor(listaItemSaida.get(position).getQuantidade()) +
+                        (( (listaItemSaida.get(position).getQuantidadeConferido() > 0) ) ?
+                                " | C." + funcoes.arredondarValor(listaItemSaida.get(position).getQuantidadeConferido()) : "") );
+                textBottonDireito.setText("Est.: " + funcoes.arredondarValor(listaItemSaida.get(position).getEstoque().getEstoque()));
+
+                // Checa se este item ja foi conferido
+                if (listaItemSaida.get(position).getQuantidadeConferido() == listaItemSaida.get(position).getQuantidade()){
+
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        viewTopo.setBackgroundColor(context.getColor(R.color.verde));
+                    } else {
+                        viewTopo.setBackgroundColor(context.getResources().getColor(R.color.verde));
+                    }
+                } else if ((listaItemSaida.get(position).getQuantidadeConferido() < listaItemSaida.get(position).getQuantidade()) &&
+                        (listaItemSaida.get(position).getQuantidadeConferido() > 0)){
+
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        viewTopo.setBackgroundColor(context.getColor(R.color.amarelo));
+                    } else {
+                        viewTopo.setBackgroundColor(context.getResources().getColor(R.color.amarelo));
+                    }
+                } else if ((listaItemSaida.get(position).getQuantidadeConferido() > listaItemSaida.get(position).getQuantidade())) {
+
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        viewTopo.setBackgroundColor(context.getColor(R.color.vermelho));
+                    } else {
+                        viewTopo.setBackgroundColor(context.getResources().getColor(R.color.vermelho));
+                    }
+
+                } else{
+                    viewTopo.setVisibility(View.INVISIBLE);
+                }
+                viewRodape.setVisibility(View.INVISIBLE);
+
+                if(listaItemSaida.get(position).isTagSelectContext()){
+                    view.setBackgroundColor(context.getResources().getColor(android.R.color.background_light));
+                    textDescricao.setTypeface(null, Typeface.BOLD);
+                    textAbaixoDescricaoEsqueda.setTypeface(null, Typeface.BOLD);
+                    textAbaixoDescricaoDireita.setTypeface(null, Typeface.BOLD);
+                    textBottonDireito.setTypeface(null, Typeface.BOLD);
+                    textBottonEsquerdo.setTypeface(null, Typeface.BOLD);
+                    textBottonEsquerdoDois.setTypeface(null, Typeface.BOLD);
+
+                } else {
+                    view.setBackgroundColor(context.getResources().getColor(android.R.color.transparent));
+                    textDescricao.setTypeface(null, Typeface.NORMAL);
+                    textAbaixoDescricaoEsqueda.setTypeface(null, Typeface.NORMAL);
+                    textAbaixoDescricaoDireita.setTypeface(null, Typeface.NORMAL);
+                    textBottonDireito.setTypeface(null, Typeface.NORMAL);
+                    textBottonEsquerdo.setTypeface(null, Typeface.NORMAL);
+                    textBottonEsquerdoDois.setTypeface(null, Typeface.NORMAL);
+                }
+
             }
 
             if ( (tipoItem == LISTA_PRODUTO) || (tipoItem == LISTA_PRODUTO_LOJA) ){
