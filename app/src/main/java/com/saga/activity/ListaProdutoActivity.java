@@ -18,7 +18,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.ProgressBar;
-import android.widget.Toast;
 
 import com.github.johnpersano.supertoasts.SuperToast;
 import com.github.johnpersano.supertoasts.util.Style;
@@ -30,7 +29,6 @@ import com.saga.beans.ProdutoLojaBeans;
 import com.saga.funcoes.FuncoesPersonalizadas;
 import com.saga.funcoes.rotinas.FotoRotinas;
 import com.saga.funcoes.rotinas.ProdutoRotinas;
-import com.saga.funcoes.rotinas.Rotinas;
 import com.saga.funcoes.rotinas.SaidaRotinas;
 
 import java.util.List;
@@ -54,7 +52,7 @@ public class ListaProdutoActivity extends AppCompatActivity {
                 idSaida = -1;
     private int mPreviousVisibleItem;
     private String wherePesquisa, textoPesquisa;
-    private boolean pesquisando = false;
+    private boolean pesquisando = false, pesquisouPorProduto = false, pesquisouPorEmbalagem = false;
     public static final int TELA_LOCACAO_PRODUTO_ACTIVITY = 0,
                             TELA_LISTA_UNIVERSAL_FRAGMENT_PESQUISA_ITEM_SAIDA = 1;
     public static final String KEY_TELA_CHAMADA = "keyTelaChamada",
@@ -95,18 +93,23 @@ public class ListaProdutoActivity extends AppCompatActivity {
         } else if (telaChamada == TELA_LISTA_UNIVERSAL_FRAGMENT_PESQUISA_ITEM_SAIDA){
             toolbarCabecalho.setTitle(textoPesquisa);
 
-            LoaderProdutos carregarProduto = new LoaderProdutos(ListaProdutoActivity.this, wherePesquisa);
-            carregarProduto.execute();
+            if ((wherePesquisa != null) || (wherePesquisa.length() > 0) || (textoPesquisa != null) || (textoPesquisa.length() > 0)) {
+                LoaderProdutos carregarProduto = new LoaderProdutos(ListaProdutoActivity.this, wherePesquisa);
+                carregarProduto.execute();
+
+            } else {
+                SuperToast.create(ListaProdutoActivity.this, getResources().getString(R.string.nenhum_filtro_foi_passado), SuperToast.Duration.LONG, Style.getStyle(Style.RED, SuperToast.Animations.FLYIN)).show();
+            }
         }
 
         listViewListaProduto.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
-                ProdutoLojaBeans produtoLojaBeans = (ProdutoLojaBeans) parent.getItemAtPosition(position);
-
                 // Checa se teve alguma outra tela que chamou esta tela (lista de produtos)
                 if (telaChamada == -1){
+                    // Pega o item clicado na lista
+                    ProdutoLojaBeans produtoLojaBeans = (ProdutoLojaBeans) parent.getItemAtPosition(position);
 
                     Bundle bundle = new Bundle();
                     bundle.putInt(CadastroEmbalagemActivity.KEY_ID_PRODUTO, produtoLojaBeans.getProduto().getIdProduto());
@@ -119,6 +122,9 @@ public class ListaProdutoActivity extends AppCompatActivity {
 
                 // Checa se que chamou esta tela foi a tela de locacao de produtos
                 } else if (telaChamada == TELA_LOCACAO_PRODUTO_ACTIVITY){
+                    // Pega o item clicado na lista
+                    ProdutoLojaBeans produtoLojaBeans = (ProdutoLojaBeans) parent.getItemAtPosition(position);
+
                     Bundle idProduto = new Bundle();
                     idProduto.putInt("ID_AEAPLOJA", produtoLojaBeans.getIdProdutoLoja());
 
@@ -127,6 +133,22 @@ public class ListaProdutoActivity extends AppCompatActivity {
                     returnIntent.putExtras(idProduto);
 
                     setResult(LocacaoProdutoActivity.PRODUTO_RETORNADO_SUCESSO, returnIntent);
+
+                    finish();
+
+                } else if (telaChamada == TELA_LISTA_UNIVERSAL_FRAGMENT_PESQUISA_ITEM_SAIDA){
+                    // Pega o item clicado na lista
+                    ItemSaidaBeans itemSaidaBeans = (ItemSaidaBeans) parent.getItemAtPosition(position);
+
+                    Bundle retorno = new Bundle();
+                    retorno.putDouble(ListaUniversalActivity.KEY_RETORNO_FATOR_PESQUISADO, itemSaidaBeans.getFatorProdutoPesquisado());
+                    retorno.putInt(ListaUniversalActivity.KEY_ID_ITEM_SAIDA, itemSaidaBeans.getIdItemSaida());
+
+                    // Cria uma intent para returnar um valor para activity ProdutoLista
+                    Intent returnIntent = new Intent();
+                    returnIntent.putExtras(retorno);
+
+                    setResult(ListaUniversalActivity.RETORNO_ITEM_SAIDA_CONFERIDO_OK, returnIntent);
 
                     finish();
                 }
@@ -349,16 +371,62 @@ public class ListaProdutoActivity extends AppCompatActivity {
         protected Void doInBackground(Void... params) {
 
             if (telaChamada == TELA_LISTA_UNIVERSAL_FRAGMENT_PESQUISA_ITEM_SAIDA){
-                SaidaRotinas saidaRotinas = new SaidaRotinas(context);
-                // Pesquisa o item de acordo com os dados passados por parametro
-                listaItemSaida = saidaRotinas.listaItemSaida(idSaida, SaidaRotinas.SIM, where, SaidaRotinas.SEM_CONFERIR, progressBarStatus);
 
+                if ( (where == null) || (where.length() <= 0)) {
+
+                    // Crio uma vareavel para saber se o que foi digitado eh apenas numeros
+                    boolean apenasNumeros = true;
+
+                    // Passa por todos os caracter checando se eh apenas numero
+                    for (char digito : textoPesquisa.toCharArray()) {
+                        // Checa se eh um numero
+                        if (!Character.isDigit(digito)) {
+                            apenasNumeros = false;
+                            break;
+                        }
+                    }
+                    if (apenasNumeros) {
+                        // Checa se o numero eh maior que 8 digitos
+                        if ( (textoPesquisa.length() < 8) && (pesquisouPorProduto == false) ) {
+
+                            where = "(AEAPRODU.CODIGO_ESTRUTURAL = '" + textoPesquisa + "') OR (AEAPRODU.ID_AEAPRODU = " + textoPesquisa + ")";
+
+                        } else {
+                            where = "(AEAEMBAL_PRODU.CODIGO_BARRAS = '" + textoPesquisa + "') OR (AEAPRODU.CODIGO_BARRAS = '" + textoPesquisa + "')";
+                        }
+
+                    } else {
+                        where = "(AEAPRODU.DESCRICAO LIKE '%" + textoPesquisa + "%') OR (AEAMARCA.DESCRICAO LIKE '%" + textoPesquisa + "%')";
+                    }
+                }
+                // Instancia a classe de rotinas de saidas
+                SaidaRotinas saidaRotinas = new SaidaRotinas(context);
+
+                if (pesquisouPorProduto == false){
+                    // Marca que ja fez a pesquisa na tabela de embalagem
+                    pesquisouPorProduto = true;
+
+                    // Pesquisa o item de acordo com os dados passados por parametro
+                    listaItemSaida = saidaRotinas.listaItemSaida(idSaida, SaidaRotinas.NAO, where, SaidaRotinas.SEM_CONFERIR, progressBarStatus);
+                }
+                // Checa se retornou alguma coisa
+                if ( (listaItemSaida == null) || (listaItemSaida.size() <= 0) ){
+
+                    // Checa se ja foi pesquisado por produto e se ainda nao foi pesquisado na tabela de embalagens
+                    if ((pesquisouPorEmbalagem == false) && (pesquisouPorProduto)){
+                        pesquisouPorEmbalagem = true;
+
+                        // Pesquisa o item de acordo com os dados passados por parametro
+                        listaItemSaida = saidaRotinas.listaItemSaida(idSaida, SaidaRotinas.SIM, where, SaidaRotinas.SEM_CONFERIR, progressBarStatus);
+                    }
+                }
                 // Checa se retornou alguma coisa
                 if ( (listaItemSaida != null) && (listaItemSaida.size() > 0) ){
                     // Instancia a classe de adapter
                     adapterListaProdutos = new ItemUniversalAdapter(context, ItemUniversalAdapter.LISTA_ITEM_PEDIDO);
                     // Envia a lista de produto para o adapter
                     adapterListaProdutos.setListaItemSaida(listaItemSaida);
+
                 }
 
             } else {

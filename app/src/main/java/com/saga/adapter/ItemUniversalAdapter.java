@@ -23,10 +23,12 @@ import com.saga.beans.AtivoBeans;
 import com.saga.beans.EmbalagemBeans;
 import com.saga.beans.EstoqueBeans;
 import com.saga.beans.ItemNotaFiscalEntradaBeans;
+import com.saga.beans.ItemOrcamentoBeans;
 import com.saga.beans.ItemRomaneioBeans;
 import com.saga.beans.ItemSaidaBeans;
 import com.saga.beans.LocesBeans;
 import com.saga.beans.NotaFiscalEntradaBeans;
+import com.saga.beans.OrcamentoBeans;
 import com.saga.beans.ProdutoBeans;
 import com.saga.beans.ProdutoLojaBeans;
 import com.saga.beans.RomaneioBeans;
@@ -56,7 +58,9 @@ public class ItemUniversalAdapter extends BaseAdapter {
                             LISTA_ROMANEIO = 9,
                             LISTA_ITEM_ROMANEIO = 10,
                             LISTA_PEDIDO = 11,
-                            LISTA_ITEM_PEDIDO = 12;
+                            LISTA_ITEM_PEDIDO = 12,
+                            LISTA_ORCAMENTO = 13,
+                            LISTA_ITEM_ORCAMENTO = 14;
     private Context context;
     private int tipoItem;
     private List<NotaFiscalEntradaBeans> listaNotaFiscalEntrada;
@@ -72,6 +76,8 @@ public class ItemUniversalAdapter extends BaseAdapter {
     private List<ItemRomaneioBeans> listaItemRomaneio;
     private List<SaidaBeans> listaSaida;
     private List<ItemSaidaBeans> listaItemSaida;
+    private List<OrcamentoBeans> listaOrcamento;
+    private List<ItemOrcamentoBeans> listaItemOrcamento;
 
     public ItemUniversalAdapter(Context context, int tipoItem) {
         this.context = context;
@@ -182,6 +188,22 @@ public class ItemUniversalAdapter extends BaseAdapter {
         this.listaItemSaida = listaItemSaida;
     }
 
+    public List<OrcamentoBeans> getListaOrcamento() {
+        return listaOrcamento;
+    }
+
+    public void setListaOrcamento(List<OrcamentoBeans> listaOrcamento) {
+        this.listaOrcamento = listaOrcamento;
+    }
+
+    public List<ItemOrcamentoBeans> getListaItemOrcamento() {
+        return listaItemOrcamento;
+    }
+
+    public void setListaItemOrcamento(List<ItemOrcamentoBeans> listaItemOrcamento) {
+        this.listaItemOrcamento = listaItemOrcamento;
+    }
+
     @Override
     public int getCount() {
         // Verifica o tipo de item
@@ -225,6 +247,12 @@ public class ItemUniversalAdapter extends BaseAdapter {
 
         } else if (this.tipoItem == LISTA_ITEM_PEDIDO){
             return listaItemSaida.size();
+
+        } else if (this.tipoItem == LISTA_ORCAMENTO){
+            return listaOrcamento.size();
+
+        } else if (this.tipoItem == LISTA_ITEM_ORCAMENTO){
+            return listaItemOrcamento.size();
 
         }
         else {
@@ -276,6 +304,12 @@ public class ItemUniversalAdapter extends BaseAdapter {
         } else if (this.tipoItem == LISTA_ITEM_PEDIDO){
             return listaItemSaida.get(position);
 
+        } else if (this.tipoItem == LISTA_ORCAMENTO){
+            return listaOrcamento.get(position);
+
+        } else if (this.tipoItem == LISTA_ITEM_ORCAMENTO){
+            return listaItemOrcamento.get(position);
+
         }
         else {
             return null;
@@ -325,6 +359,12 @@ public class ItemUniversalAdapter extends BaseAdapter {
 
         } else if (this.tipoItem == LISTA_ITEM_PEDIDO){
             return listaItemSaida.get(position).getIdItemSaida();
+
+        } else if (this.tipoItem == LISTA_ORCAMENTO){
+            return listaOrcamento.get(position).getIdOrcamento();
+
+        } else if (this.tipoItem == LISTA_ITEM_ORCAMENTO){
+            return listaItemOrcamento.get(position).getIdItemOrcamento();
 
         }
         else {
@@ -747,6 +787,79 @@ public class ItemUniversalAdapter extends BaseAdapter {
                     textBottonEsquerdoDois.setTypeface(null, Typeface.NORMAL);
                 }
 
+            } else if (this.tipoItem == LISTA_ORCAMENTO){
+
+                textDescricao.setText(listaOrcamento.get(position).getNomeCliente() +
+                        " (" + funcoes.formataData(listaOrcamento.get(position).getDataOrcamento()) + ")");
+                textAbaixoDescricaoEsqueda.setText(listaOrcamento.get(position).getSerieOrcamento().getCodigo() + " - " + listaOrcamento.get(position).getNumeroOrcamento());
+                textAbaixoDescricaoDireita.setText( ( (listaOrcamento.get(position).getCidadeOrcamento().getDescricaoCidade().length() > 0) ?
+                        listaOrcamento.get(position).getCidadeOrcamento().getDescricaoCidade() : "") );
+                textBottonEsquerdo.setText("Vl.: " + funcoes.arredondarValor(listaOrcamento.get(position).getValorTotalOrcamento()));
+                textBottonEsquerdoDois.setText(" | " + ( (listaOrcamento.get(position).getAtacadoVarejo().equalsIgnoreCase("0")) ? "Atac" : "Vare" ) );
+                textBottonDireito.setText( ( (listaOrcamento.get(position).getBairroCliente().length() > 0) ?  listaOrcamento.get(position).getBairroCliente() : "") );
+
+                viewRodape.setVisibility(View.INVISIBLE);
+                viewTopo.setVisibility(View.INVISIBLE);
+            
+            } else if (this.tipoItem == LISTA_ITEM_ORCAMENTO){
+
+                textDescricao.setText(listaItemOrcamento.get(position).getEstoqueItemOrcamento().getProdutoLoja().getProduto().getDescricaoProduto() +
+                        " - " + listaItemOrcamento.get(position).getEstoqueItemOrcamento().getProdutoLoja().getProduto().getMarca().getDescricao() );
+                textAbaixoDescricaoEsqueda.setText("Cod.: " + listaItemOrcamento.get(position).getEstoqueItemOrcamento().getProdutoLoja().getProduto().getCodigoEstrutural());
+                textAbaixoDescricaoDireita.setText("Ref.: " + listaItemOrcamento.get(position).getEstoqueItemOrcamento().getProdutoLoja().getProduto().getReferencia());
+                textBottonEsquerdo.setText(listaItemOrcamento.get(position).getUnidadeVenda().getSigla());
+                textBottonEsquerdoDois.setText(" | " + funcoes.arredondarValor(listaItemOrcamento.get(position).getQuantidadeItemOrcamento()) +
+                        (( (listaItemOrcamento.get(position).getQuantidadeConferidaItemOrcamento() > 0) ) ?
+                                " | C." + funcoes.arredondarValor(listaItemOrcamento.get(position).getQuantidadeConferidaItemOrcamento()) : "") );
+                textBottonDireito.setText("Est.: " + funcoes.arredondarValor(listaItemOrcamento.get(position).getEstoqueItemOrcamento().getEstoque()));
+
+                // Checa se este item ja foi conferido
+                if (listaItemOrcamento.get(position).getQuantidadeConferidaItemOrcamento() == listaItemOrcamento.get(position).getQuantidadeItemOrcamento()){
+
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        viewTopo.setBackgroundColor(context.getColor(R.color.verde));
+                    } else {
+                        viewTopo.setBackgroundColor(context.getResources().getColor(R.color.verde));
+                    }
+                } else if ((listaItemOrcamento.get(position).getQuantidadeConferidaItemOrcamento() < listaItemOrcamento.get(position).getQuantidadeItemOrcamento()) &&
+                        (listaItemOrcamento.get(position).getQuantidadeConferidaItemOrcamento() > 0)){
+
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        viewTopo.setBackgroundColor(context.getColor(R.color.amarelo));
+                    } else {
+                        viewTopo.setBackgroundColor(context.getResources().getColor(R.color.amarelo));
+                    }
+                } else if ((listaItemOrcamento.get(position).getQuantidadeConferidaItemOrcamento() > listaItemOrcamento.get(position).getQuantidadeItemOrcamento())) {
+
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        viewTopo.setBackgroundColor(context.getColor(R.color.vermelho));
+                    } else {
+                        viewTopo.setBackgroundColor(context.getResources().getColor(R.color.vermelho));
+                    }
+
+                } else{
+                    viewTopo.setVisibility(View.INVISIBLE);
+                }
+                viewRodape.setVisibility(View.INVISIBLE);
+
+                if(listaItemOrcamento.get(position).isTagSelectContext()){
+                    view.setBackgroundColor(context.getResources().getColor(android.R.color.background_light));
+                    textDescricao.setTypeface(null, Typeface.BOLD);
+                    textAbaixoDescricaoEsqueda.setTypeface(null, Typeface.BOLD);
+                    textAbaixoDescricaoDireita.setTypeface(null, Typeface.BOLD);
+                    textBottonDireito.setTypeface(null, Typeface.BOLD);
+                    textBottonEsquerdo.setTypeface(null, Typeface.BOLD);
+                    textBottonEsquerdoDois.setTypeface(null, Typeface.BOLD);
+
+                } else {
+                    view.setBackgroundColor(context.getResources().getColor(android.R.color.transparent));
+                    textDescricao.setTypeface(null, Typeface.NORMAL);
+                    textAbaixoDescricaoEsqueda.setTypeface(null, Typeface.NORMAL);
+                    textAbaixoDescricaoDireita.setTypeface(null, Typeface.NORMAL);
+                    textBottonDireito.setTypeface(null, Typeface.NORMAL);
+                    textBottonEsquerdo.setTypeface(null, Typeface.NORMAL);
+                    textBottonEsquerdoDois.setTypeface(null, Typeface.NORMAL);
+                }
             }
 
             if ( (tipoItem == LISTA_PRODUTO) || (tipoItem == LISTA_PRODUTO_LOJA) ){

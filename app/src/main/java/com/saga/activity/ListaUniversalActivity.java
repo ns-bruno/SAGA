@@ -26,7 +26,9 @@ public class ListaUniversalActivity extends AppCompatActivity {
                             TELA_ITEM_NOTA_FISCAL_ENTRADA = 2,
                             TELA_ITEM_ROMANEIO = 3,
                             TELA_PEDIDO = 4,
-                            TELA_ITEM_PEDIDO = 5;
+                            TELA_ITEM_PEDIDO = 5,
+                            TELA_ORCAMENTO = 6,
+                            TELA_ITEM_ORCAMENTO = 7;
     public static final String KEY_TIPO_TELA = "KEY_TIPO_TELA";
     public static final String KEY_NOME_ABA = "KEY_NOME_ABA";
     public static final int REQUISICAO_DADOS_PRODUTOS = 100,
@@ -55,6 +57,7 @@ public class ListaUniversalActivity extends AppCompatActivity {
             dadosParametros.put("ID_AEAENTRA", (intentParametro.getInt("ID_AEAENTRA") > 0) ? intentParametro.getInt("ID_AEAENTRA") : -1);
             dadosParametros.put("ID_AEAROMAN", (intentParametro.getInt("ID_AEAROMAN") > 0) ? intentParametro.getInt("ID_AEAROMAN") : -1);
             dadosParametros.put("ID_AEASAIDA", (intentParametro.getInt("ID_AEASAIDA") > 0) ? intentParametro.getInt("ID_AEASAIDA") : -1);
+            dadosParametros.put("ID_AEAORCAM", (intentParametro.getInt("ID_AEAORCAM") > 0) ? intentParametro.getInt("ID_AEAORCAM") : -1);
 
             // Verifica qual eh o tipo da tela
             if (tipoTela == TELA_NOTA_FISCAL_ENTRADA){
@@ -73,8 +76,11 @@ public class ListaUniversalActivity extends AppCompatActivity {
             } else if (tipoTela == TELA_PEDIDO){
                 toolbarCabecalho.setTitle(R.string.lista_pedidos);
 
-            } else if (tipoTela == TELA_ITEM_PEDIDO){
-                toolbarCabecalho.setTitle(R.string.itens_pedido);
+            } else if (tipoTela == TELA_ORCAMENTO){
+                toolbarCabecalho.setTitle(R.string.orcamento);
+
+            } else if (tipoTela == TELA_ITEM_ORCAMENTO){
+                toolbarCabecalho.setTitle(R.string.produtos_orcamento);
 
             }
         }

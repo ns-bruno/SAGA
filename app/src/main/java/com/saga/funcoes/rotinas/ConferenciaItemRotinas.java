@@ -3,6 +3,7 @@ package com.saga.funcoes.rotinas;
 import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Context;
+import android.media.MediaPlayer;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -91,6 +92,9 @@ public class ConferenciaItemRotinas extends Rotinas {
                                 funcoes.menssagem(contentValues);
                             }
                         });
+                        // Emite um som de positivo
+                        MediaPlayer somSucesso = MediaPlayer.create(context, R.raw.effect_alert_error);
+                        somSucesso.start();
                     }
                 }
             } else {

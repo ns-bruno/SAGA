@@ -17,6 +17,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AbsListView;
 import android.widget.Button;
 import android.widget.EditText;
@@ -24,7 +25,6 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.afollestad.materialdialogs.AlertDialogWrapper;
 import com.afollestad.materialdialogs.MaterialDialog;
@@ -247,6 +247,10 @@ public class LocacaoEnderecoActivity extends AppCompatActivity {
         // Carrega a lista de estoques
         CarregarListaLoces carregarListaLoces = new CarregarListaLoces(LocacaoEnderecoActivity.this);
         carregarListaLoces.execute();
+
+        FuncoesPersonalizadas funcoes = new FuncoesPersonalizadas(LocacaoEnderecoActivity.this);
+        // Fecha o teclado virtual
+        funcoes.fecharTecladoVirtual(getCurrentFocus());
 
     } // Fim onCreate
 

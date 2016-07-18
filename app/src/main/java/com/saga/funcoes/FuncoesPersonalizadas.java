@@ -15,6 +15,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import com.afollestad.materialdialogs.AlertDialogWrapper;
@@ -151,6 +152,15 @@ public class FuncoesPersonalizadas {
         // Tratamento de erro para campo obrigatorio (not null)
         if(erro.toLowerCase().contains("code 1299")){
             erro = context.getResources().getString(R.string.erro_sqlite_code_1299) + "\n" + erro + "\n";
+        }
+        // Tratamento para registro duplicado
+        if(erro.toLowerCase().contains("duplicate value")){
+            erro = context.getResources().getString(R.string.erro_valor_duplicado) + "\n" + erro + "\n";
+        }
+
+        // Tratamento quando nao existe a aplicacao webservice no servidor
+        if(erro.toLowerCase().contains("status: 404")){
+            erro = context.getResources().getString(R.string.erro_nao_existe_aplicacao_webservice) + "\n" + erro + "\n";
         }
 
         if ((erro.toLowerCase().contains("no such table")) || (erro.toLowerCase().contains("no such column"))){
@@ -593,9 +603,10 @@ public class FuncoesPersonalizadas {
         }
     }
 
-    public static void fecharTecladoVirtual(View activity){
-        InputMethodManager inputMethodManager = (InputMethodManager)  activity.getContext().getSystemService(Activity.INPUT_METHOD_SERVICE);
-        inputMethodManager.hideSoftInputFromWindow(activity.getWindowToken(), 0);
+    public void fecharTecladoVirtual(View view){
+
+        InputMethodManager inputMethodManager = (InputMethodManager)  context.getApplicationContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+        inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
     }
 
     public boolean isValidarCodigoBarraGS1(String codigoBarras){
@@ -657,7 +668,7 @@ public class FuncoesPersonalizadas {
             }
             // Subtraia soma por um múltiplo de 10 superior mais próximo a ele
             // Depois checa se o resultado da subtracao eh igual ao digito passado por paramento
-            return (soma - somaMultipla) == digito;
+            return (somaMultipla - soma) == digito;
 
         } else {
             return false;

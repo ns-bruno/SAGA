@@ -3,6 +3,7 @@ package com.saga.activity;
 import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Intent;
+import android.media.MediaPlayer;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -246,7 +247,7 @@ public class ConferenciaItemNotaEntradaActivity extends AppCompatActivity {
             if (!funcoes.isValidarCodigoBarraGS1(editCodigoBarraProduto.getText().toString())){
 
                 final ContentValues contentValues = new ContentValues();
-                contentValues.put("comando", 2);
+                contentValues.put("comando", 0);
                 contentValues.put("tela", "ConferenciaItemNotaEntradaActivity");
                 contentValues.put("mensagem", getResources().getString(R.string.codigo_barras_invalido));
 
@@ -255,6 +256,9 @@ public class ConferenciaItemNotaEntradaActivity extends AppCompatActivity {
                         funcoes.menssagem(contentValues);
                     }
                 });
+                // Emite um som de erro
+                MediaPlayer somSucesso = MediaPlayer.create(ConferenciaItemNotaEntradaActivity.this, R.raw.effect_alert_error);
+                somSucesso.start();
 
                 retorno = false;
             }

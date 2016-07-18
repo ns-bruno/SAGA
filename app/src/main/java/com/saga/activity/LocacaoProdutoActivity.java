@@ -261,7 +261,7 @@ public class LocacaoProdutoActivity extends AppCompatActivity {
                 SuperToast.create(LocacaoProdutoActivity.this, getResources().getString(R.string.escaneamento_cancelado), SuperToast.Duration.LONG, Style.getStyle(Style.RED, SuperToast.Animations.POPUP)).show();
 
             } else {
-                Log.d("SAGA", "Scanned");
+                Log.d("SAGA", "Scanned - LocacaoProdutoActivity");
                 //Toast.makeText(this, "Scanned: " + retornoEscanerCodigoBarra.getContents(), Toast.LENGTH_LONG).show();
 
                 if (campoQueChamouLeitor == CAMPO_PRODUTO) {
@@ -539,6 +539,7 @@ public class LocacaoProdutoActivity extends AppCompatActivity {
 
                 contentValues.put("mensagem", context.getResources().getString(R.string.atualizado_sucesso));
 
+                // Emite um som de positivo
                 MediaPlayer somSucesso = MediaPlayer.create(context, R.raw.effect_alert_positive);
                 somSucesso.start();
 

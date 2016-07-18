@@ -59,11 +59,21 @@ public class ListaUniversalTabulacaoAdapter extends FragmentStatePagerAdapter {
         } else if (dadosParamentros.getAsInteger(ListaUniversalActivity.KEY_TIPO_TELA) == ListaUniversalActivity.TELA_ITEM_PEDIDO) {
 
             argumentos.putString(ListaUniversalActivity.KEY_NOME_ABA, context.getResources().getStringArray(R.array.tab_item_pedido)[position]);
+
+        } else if (dadosParamentros.getAsInteger(ListaUniversalActivity.KEY_TIPO_TELA) == ListaUniversalActivity.TELA_ORCAMENTO) {
+
+            argumentos.putString(ListaUniversalActivity.KEY_NOME_ABA, context.getResources().getStringArray(R.array.tab_orcamento)[position]);
+
+        } else if (dadosParamentros.getAsInteger(ListaUniversalActivity.KEY_TIPO_TELA) == ListaUniversalActivity.TELA_ITEM_ORCAMENTO) {
+
+            argumentos.putString(ListaUniversalActivity.KEY_NOME_ABA, context.getResources().getStringArray(R.array.tab_item_orcamento)[position]);
+
         }
 
         argumentos.putInt("ID_AEAENTRA", dadosParamentros.getAsInteger("ID_AEAENTRA"));
         argumentos.putInt("ID_AEAROMAN", dadosParamentros.getAsInteger("ID_AEAROMAN"));
         argumentos.putInt("ID_AEASAIDA", dadosParamentros.getAsInteger("ID_AEASAIDA"));
+        argumentos.putInt("ID_AEAORCAM", dadosParamentros.getAsInteger("ID_AEAORCAM"));
 
         // Coloca o argumento dentro do fragment
         fragment.setArguments(argumentos);
@@ -94,6 +104,12 @@ public class ListaUniversalTabulacaoAdapter extends FragmentStatePagerAdapter {
 
         } else if (dadosParamentros.getAsInteger(ListaUniversalActivity.KEY_TIPO_TELA) == ListaUniversalActivity.TELA_ITEM_PEDIDO) {
             titulos = context.getResources().getStringArray(R.array.tab_item_pedido);
+
+        } else if (dadosParamentros.getAsInteger(ListaUniversalActivity.KEY_TIPO_TELA) == ListaUniversalActivity.TELA_ORCAMENTO) {
+            titulos = context.getResources().getStringArray(R.array.tab_orcamento);
+
+        } else if (dadosParamentros.getAsInteger(ListaUniversalActivity.KEY_TIPO_TELA) == ListaUniversalActivity.TELA_ITEM_ORCAMENTO) {
+            titulos = context.getResources().getStringArray(R.array.tab_item_orcamento);
 
         }
 
@@ -126,6 +142,14 @@ public class ListaUniversalTabulacaoAdapter extends FragmentStatePagerAdapter {
         } else if (dadosParamentros.getAsInteger(ListaUniversalActivity.KEY_TIPO_TELA) == ListaUniversalActivity.TELA_ITEM_PEDIDO) {
             // retorna o numero de abas a ser criado
             return context.getResources().getStringArray(R.array.tab_item_pedido).length;
+
+        } else if (dadosParamentros.getAsInteger(ListaUniversalActivity.KEY_TIPO_TELA) == ListaUniversalActivity.TELA_ORCAMENTO) {
+            // retorna o numero de abas a ser criado
+            return context.getResources().getStringArray(R.array.tab_orcamento).length;
+
+        } else if (dadosParamentros.getAsInteger(ListaUniversalActivity.KEY_TIPO_TELA) == ListaUniversalActivity.TELA_ITEM_ORCAMENTO) {
+            // retorna o numero de abas a ser criado
+            return context.getResources().getStringArray(R.array.tab_item_orcamento).length;
 
         } else {
             return 0;

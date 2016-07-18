@@ -32,20 +32,25 @@ import com.afollestad.materialdialogs.MaterialDialog;
 import com.github.johnpersano.supertoasts.SuperToast;
 import com.github.johnpersano.supertoasts.util.Style;
 import com.saga.R;
+import com.saga.activity.CadastroEmbalagemActivity;
 import com.saga.activity.ConferenciaItemNotaEntradaActivity;
 import com.saga.activity.ListaProdutoActivity;
 import com.saga.activity.ListaUniversalActivity;
 import com.saga.adapter.ItemUniversalAdapter;
 import com.saga.beans.ConferenciaItemBeans;
 import com.saga.beans.ItemNotaFiscalEntradaBeans;
+import com.saga.beans.ItemOrcamentoBeans;
 import com.saga.beans.ItemRomaneioBeans;
 import com.saga.beans.ItemSaidaBeans;
 import com.saga.beans.NotaFiscalEntradaBeans;
+import com.saga.beans.OrcamentoBeans;
+import com.saga.beans.ProdutoLojaBeans;
 import com.saga.beans.RomaneioBeans;
 import com.saga.beans.SaidaBeans;
 import com.saga.funcoes.FuncoesPersonalizadas;
 import com.saga.funcoes.rotinas.ConferenciaItemRotinas;
 import com.saga.funcoes.rotinas.NotaFiscalEntradaRotinas;
+import com.saga.funcoes.rotinas.OrcamentoRotinas;
 import com.saga.funcoes.rotinas.RomaneioRotinas;
 import com.saga.funcoes.rotinas.SaidaRotinas;
 
@@ -73,7 +78,7 @@ public class ListaUniversalFragment extends Fragment {
     private Toolbar toolbarRodape;
     private String nomeAba = null;
     private Boolean pesquisando = false;
-    private int idEntrada, idRomaneio, idSaida;
+    private int idEntrada, idRomaneio, idSaida, idOrcamento;
     private int mPreviousVisibleItem;
     private List<NotaFiscalEntradaBeans> listaNotaFiscalEntradaSelecionado;
     private List<ItemNotaFiscalEntradaBeans> listaItemNotaFiscalEntradaSelecionado;
@@ -104,6 +109,7 @@ public class ListaUniversalFragment extends Fragment {
             idEntrada = (parametro.get("ID_AEAENTRA") != null) ? parametro.getInt("ID_AEAENTRA") : -1;
             idRomaneio = (parametro.get("ID_AEAROMAN") != null) ? parametro.getInt("ID_AEAROMAN") : -1;
             idSaida = (parametro.get("ID_AEASAIDA") != null) ? parametro.getInt("ID_AEASAIDA") : -1;
+            idOrcamento = (parametro.get("ID_AEAORCAM") != null) ? parametro.getInt("ID_AEAORCAM") : -1;
         }
 
         // Checa qual eh o tipo de tela
@@ -213,6 +219,32 @@ public class ListaUniversalFragment extends Fragment {
                 LoaderLista carregarLista = new LoaderLista(null);
                 carregarLista.execute();
             }
+        } else if (tipoTela == ListaUniversalActivity.TELA_ORCAMENTO){
+            // Mosta a tollbar na tela de lista de nota
+            toolbarRodape.setVisibility(View.VISIBLE);
+
+            // Atualiza o titulo da toolbar cabecalho
+            ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(getContext().getResources().getString(R.string.orcamento));
+
+            /*if (pesquisando == false){
+                // informa que ja esta sendo pesquisado alguma coisa
+                pesquisando = true;
+                LoaderLista carregarLista = new LoaderLista(null);
+                carregarLista.execute();
+            }*/
+        } else if (tipoTela == ListaUniversalActivity.TELA_ITEM_ORCAMENTO){
+            // Mosta a tollbar na tela de lista de nota
+            toolbarRodape.setVisibility(View.VISIBLE);
+
+            // Atualiza o titulo da toolbar cabecalho
+            ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(getContext().getResources().getString(R.string.produtos_orcamento));
+
+            if (pesquisando == false){
+                // informa que ja esta sendo pesquisado alguma coisa
+                pesquisando = true;
+                LoaderLista carregarLista = new LoaderLista(null);
+                carregarLista.execute();
+            }
         }
 
         listViewListagem.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -285,6 +317,32 @@ public class ListaUniversalFragment extends Fragment {
                     intent.putExtras(bundle);
 
                     // Abre a nova tela
+                    startActivity(intent);
+
+                } else if (tipoTela == ListaUniversalActivity.TELA_ORCAMENTO){
+                    OrcamentoBeans orcamentoBeans = (OrcamentoBeans) parent.getItemAtPosition(position);
+
+                    Bundle bundle = new Bundle();
+                    bundle.putInt(ListaUniversalActivity.KEY_TIPO_TELA, ListaUniversalActivity.TELA_ITEM_ORCAMENTO);
+                    bundle.putInt("ID_AEAORCAM", orcamentoBeans.getIdOrcamento());
+
+                    // Abre a tela de detalhes do produto
+                    Intent intent = new Intent(getContext(), ListaUniversalActivity.class);
+                    intent.putExtras(bundle);
+
+                    // Abre a nova tela
+                    startActivity(intent);
+                } else if (tipoTela == ListaUniversalActivity.TELA_ITEM_ORCAMENTO){
+                    // Pega o item clicado na lista
+                    ItemOrcamentoBeans itemOrcamentoBeans = (ItemOrcamentoBeans) parent.getItemAtPosition(position);
+
+                    Bundle bundle = new Bundle();
+                    bundle.putInt(CadastroEmbalagemActivity.KEY_ID_PRODUTO, itemOrcamentoBeans.getEstoqueItemOrcamento().getProdutoLoja().getProduto().getIdProduto());
+                    bundle.putInt(CadastroEmbalagemActivity.KEY_ID_AEAEMBAL, itemOrcamentoBeans.getEstoqueItemOrcamento().getProdutoLoja().getProduto().getUnidadeVenda().getIdUnidadeVenda());
+
+                    // Abre a tela de detalhes do produto
+                    Intent intent = new Intent(getContext(), ConferenciaItemNotaEntradaActivity.class);
+                    intent.putExtras(bundle);
                     startActivity(intent);
                 }
 
@@ -632,6 +690,10 @@ public class ListaUniversalFragment extends Fragment {
                 somSucesso.start();
 
                 SuperToast.create(getContext(), getResources().getString(R.string.nao_foi_localizado_produto), SuperToast.Duration.LONG, Style.getStyle(Style.RED, SuperToast.Animations.FLYIN)).show();
+                // Limpa o campo de pesquisa
+                editPesquisar.setText("");
+                // Coloca o foco do cursor no campo de pesquisa
+                editPesquisar.requestFocus();
             }
         }
 
@@ -865,10 +927,10 @@ public class ListaUniversalFragment extends Fragment {
 
         } else if (tipoTela == ListaUniversalActivity.TELA_ITEM_PEDIDO){
 
-            if (apenasNumeros){
+            /*if (apenasNumeros){
                 // Checa se o numero eh maior que 8 digitos
                 if (editPesquisar.getText().length() >= 8){
-                    where += "AEAEMBAL_PRODU.CODIGO_BARRAS = '" + editPesquisar.getText().toString() + "'";
+                    where += "(AEAEMBAL_PRODU.CODIGO_BARRAS = '" + editPesquisar.getText().toString() + "') OR (AEAPRODU.CODIGO_BARRAS = '" + editPesquisar.getText().toString() + "')";
 
                 } else {
                     where += "(AEAPRODU.CODIGO_ESTRUTURAL = '" + editPesquisar.getText().toString() + "') OR (AEAPRODU.ID_AEAPRODU = " + editPesquisar.getText().toString() + ")";
@@ -876,7 +938,7 @@ public class ListaUniversalFragment extends Fragment {
 
             } else {
                 where += "(AEAPRODU.DESCRICAO LIKE '%" +editPesquisar.getText().toString() + "%') OR (AEAMARCA.DESCRICAO LIKE '%" + editPesquisar.getText().toString() + "%')";
-            }
+            }*/
 
             Intent intent = new Intent(getContext(), ListaProdutoActivity.class);
             intent.putExtra(ListaProdutoActivity.KEY_TELA_CHAMADA, ListaProdutoActivity.TELA_LISTA_UNIVERSAL_FRAGMENT_PESQUISA_ITEM_SAIDA);
@@ -885,10 +947,23 @@ public class ListaUniversalFragment extends Fragment {
             intent.putExtra(ListaProdutoActivity.KEY_WHERE_PESQUISA, where);
             // Abre a activity aquardando uma resposta
             startActivityForResult(intent, ListaUniversalActivity.REQUISICAO_DADOS_PRODUTOS);
+
+        } else if (tipoTela == ListaUniversalActivity.TELA_ORCAMENTO){
+            // Checa se en apenas numeros
+            if (apenasNumeros){
+                where += " (AEAORCAM.ID_AEAORCAM = " + editPesquisar.getText().toString() + ") OR (AEAORCAM.NUMERO = " + editPesquisar.getText().toString() + ") ";
+
+            } else {
+                where += " (AEAORCAM.NOME_CLIENTE LIKE '%" + editPesquisar.getText().toString() + "%') OR (AEAORCAM.CPF_CGC_CLIENTE LIKE '%"+ editPesquisar.getText().toString() + "%') OR " +
+                        " (AEAORCAM.ENDERECO_CLIENTE LIKE '%" + editPesquisar.getText().toString() + "'%) OR (AEAORCAM.BAIRRO_CLIENTE LIKE '%" + editPesquisar.getText().toString() + "%') OR " +
+                        " (AEAORCAM.FONE_CLIENTE LIKE '%" + editPesquisar.getText().toString() + "%') OR (CFAESTAD.UF LIKE %'" + editPesquisar.getText().toString() + "%') OR " +
+                        " (CFAESTAD.DESCRICAO LIKE '%" + editPesquisar.getText().toString() + "%') OR (CFACIDAD.DESCRICAO LIKE '%" + editPesquisar.getText().toString() + "%') ";
+            }
         }
 
         if ((tipoTela == ListaUniversalActivity.TELA_NOTA_FISCAL_ENTRADA) || (tipoTela == ListaUniversalActivity.TELA_ROMANEIO) ||
-                (tipoTela == ListaUniversalActivity.TELA_ITEM_ROMANEIO) || (tipoTela == ListaUniversalActivity.TELA_PEDIDO)) {
+                (tipoTela == ListaUniversalActivity.TELA_ITEM_ROMANEIO) || (tipoTela == ListaUniversalActivity.TELA_PEDIDO) ||
+                (tipoTela == ListaUniversalActivity.TELA_ORCAMENTO)) {
 
             // Seca se nao esta pesquisando
             if (pesquisando == false) {
@@ -921,7 +996,6 @@ public class ListaUniversalFragment extends Fragment {
                     LoaderLista carregarLista = new LoaderLista(null);
                     carregarLista.execute();
                 }
-
             }
         } else if (tipoTela == ListaUniversalActivity.TELA_ITEM_PEDIDO){
 
@@ -1044,6 +1118,11 @@ public class ListaUniversalFragment extends Fragment {
             }
             // retira o fator do produto pesquisado
             fatorProdutoPesquisado = -1;
+
+            // Apaga o campo de pesquisa
+            editPesquisar.setText("");
+            // Coloca o foto do cursor no campo de pesquisa
+            editPesquisar.requestFocus();
         }
     } // FIm marcarItemConferido
 
@@ -1057,6 +1136,8 @@ public class ListaUniversalFragment extends Fragment {
         List<ItemRomaneioBeans> listaItemRomaneio;
         List<SaidaBeans> listaSaida;
         List<ItemSaidaBeans> listaItemSaida;
+        List<OrcamentoBeans> listaOrcamento;
+        List<ItemOrcamentoBeans> listaItemOrcamento;
 
         public LoaderLista(String where) {
             this.where = (where != null) ? where.toUpperCase() : null;
@@ -1088,6 +1169,7 @@ public class ListaUniversalFragment extends Fragment {
             // o progressBar agora eh setado como visivel
             progressBarStatus.setVisibility(View.VISIBLE);
             textMensagem.setVisibility(View.INVISIBLE);
+            listViewListagem.setVisibility(View.VISIBLE);
         }
 
         @Override
@@ -1222,16 +1304,22 @@ public class ListaUniversalFragment extends Fragment {
                     }
 
                 } else if (tipoTela == ListaUniversalActivity.TELA_ITEM_PEDIDO){
+
                     SaidaRotinas saidaRotinas = new SaidaRotinas(getContext());
                     // Informa o tipo de conexao com o banco de dados que eh para ser feito
                     saidaRotinas.setTipoConexao((!funcoes.getValorXml("TipoConexao").equalsIgnoreCase(funcoes.NAO_ENCONTRADO)) ? funcoes.getValorXml("TipoConexao"): "I");
 
                     // Checa se eh uma aba de itens da notas nao conferidos
                     if (nomeAba.contains("Conferir")){
+                        // Pega os dados do pedido/saida
+                        listaSaida = saidaRotinas.listaSaida("AEASAIDA.ID_AEASAIDA = " + idSaida, SaidaRotinas.SEM_CONFERIR, null);
 
+                        // Pega todos os produtos do pedido/saida
                         listaItemSaida = saidaRotinas.listaItemSaida(idSaida, SaidaRotinas.NAO, where, SaidaRotinas.SEM_CONFERIR, progressBarStatus);
 
                     } else if (nomeAba.contains("Conferido")){
+                        // Pega os dados do pedido/saida
+                        listaSaida = saidaRotinas.listaSaida("AEASAIDA.ID_AEASAIDA = " + idSaida, SaidaRotinas.CONFERIDO, null);
 
                         listaItemSaida = saidaRotinas.listaItemSaida(idSaida, SaidaRotinas.NAO, where, SaidaRotinas.CONFERIDO, progressBarStatus);
                     }
@@ -1242,6 +1330,56 @@ public class ListaUniversalFragment extends Fragment {
                         // Seta a lista de romaneio
                         adapterListagem.setListaItemSaida(listaItemSaida);
                     }
+
+                } else if (tipoTela == ListaUniversalActivity.TELA_ORCAMENTO){
+
+                    OrcamentoRotinas orcamentoRotinas = new OrcamentoRotinas(getContext());
+                    // Informa o tipo de conexao com o banco de dados que eh para ser feito
+                    orcamentoRotinas.setTipoConexao((!funcoes.getValorXml("TipoConexao").equalsIgnoreCase(funcoes.NAO_ENCONTRADO)) ? funcoes.getValorXml("TipoConexao"): "I");
+
+                    // Checa se eh uma aba de itens da notas nao conferidos
+                    if (nomeAba.contains("Conferir")){
+                        // Pega todos os orcamento a serem conferidos
+                        listaOrcamento = orcamentoRotinas.listaOrcamento(where, -1, progressBarStatus);
+
+                    } else if (nomeAba.contains("Conferido")){
+                        // Pega todos os orcamento ja conferidos
+                        listaOrcamento = orcamentoRotinas.listaOrcamento(where, OrcamentoRotinas.CONFERIDO, progressBarStatus);
+                    }
+
+                    if ( (listaOrcamento != null) && (listaOrcamento.size() > 0) ){
+                        // Instancia o adapter para sair o tipo de listagem em romaneio
+                        adapterListagem = new ItemUniversalAdapter(getContext(), ItemUniversalAdapter.LISTA_ORCAMENTO);
+                        // Seta a lista de romaneio
+                        adapterListagem.setListaOrcamento(listaOrcamento);
+                    }
+
+                } else if (tipoTela == ListaUniversalActivity.TELA_ITEM_ORCAMENTO){
+
+                    OrcamentoRotinas orcamentoRotinas = new OrcamentoRotinas(getContext());
+                    // Informa o tipo de conexao com o banco de dados que eh para ser feito
+                    orcamentoRotinas.setTipoConexao((!funcoes.getValorXml("TipoConexao").equalsIgnoreCase(funcoes.NAO_ENCONTRADO)) ? funcoes.getValorXml("TipoConexao"): "I");
+
+                    // Checa se eh uma aba de itens da notas nao conferidos
+                    if (nomeAba.contains("Conferir")){
+                        // Pega todos os orcamento a serem conferidos
+                        listaOrcamento = orcamentoRotinas.listaOrcamento("AEAORCAM.ID_AEAORCAM = " + idOrcamento, -1, progressBarStatus);
+
+                        listaItemOrcamento = orcamentoRotinas.listaItemOrcamento(idOrcamento, OrcamentoRotinas.NAO, where, -1, progressBarStatus);
+
+                    } else if (nomeAba.contains("Conferido")){
+                        // Pega todos os orcamento ja conferidos
+                        listaOrcamento = orcamentoRotinas.listaOrcamento("AEAORCAM.ID_AEAORCAM = " + idOrcamento, OrcamentoRotinas.CONFERIDO, progressBarStatus);
+
+                        listaItemOrcamento = orcamentoRotinas.listaItemOrcamento(idOrcamento, OrcamentoRotinas.NAO, where, OrcamentoRotinas.CONFERIDO, progressBarStatus);
+                    }
+
+                    if ( (listaItemOrcamento != null) && (listaItemOrcamento.size() > 0)){
+                        // Instancia o adapter para sair o tipo de listagem em romaneio
+                        adapterListagem = new ItemUniversalAdapter(getContext(), ItemUniversalAdapter.LISTA_ITEM_ORCAMENTO);
+                        // Seta a lista de romaneio
+                        adapterListagem.setListaItemOrcamento(listaItemOrcamento);
+                    }
                 }
 
             }catch (Exception e) {
@@ -1251,8 +1389,10 @@ public class ListaUniversalFragment extends Fragment {
                 contentValues.put("tela", "ListaUniversalFragment");
                 contentValues.put("mensagem", "Erro ao carregar os dados do produto. \n" + e.getMessage());
                 contentValues.put("dados", e.toString());
+
                 // Pega os dados do usuario
                 final FuncoesPersonalizadas funcoes = new FuncoesPersonalizadas(getContext());
+
                 contentValues.put("usuario", funcoes.getValorXml("Usuario"));
                 contentValues.put("empresa", funcoes.getValorXml("ChaveEmpresa"));
                 contentValues.put("email", funcoes.getValorXml("Email"));
@@ -1357,8 +1497,42 @@ public class ListaUniversalFragment extends Fragment {
                     textMensagem.setVisibility(View.VISIBLE);
                 }
             } else if (tipoTela == ListaUniversalActivity.TELA_ITEM_PEDIDO){
+
+                // Checa se tem os dados do pedido/saida
+                if ((listaSaida != null) && (listaSaida.size() >0)){
+                    // Atualiza o titulo da toolbar cabecalho
+                    ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(listaSaida.get(0).getSerieSaida().getCodigo() + " " + listaSaida.get(0).getNumeroSaida() +
+                            " - " + listaSaida.get(0).getNomeCliente());
+                }
                 if ( (listaItemSaida != null) && (listaItemSaida.size() > 0) ){
                     listViewListagem.setAdapter(adapterListagem);
+
+                } else {
+                    listViewListagem.setVisibility(View.GONE);
+                    textMensagem.setVisibility(View.VISIBLE);
+                }
+
+            } else if (tipoTela == ListaUniversalActivity.TELA_ORCAMENTO){
+
+                if ((listaOrcamento != null) && (listaOrcamento.size() > 0)){
+                    listViewListagem.setAdapter(adapterListagem);
+
+                } else {
+                    listViewListagem.setVisibility(View.GONE);
+                    textMensagem.setVisibility(View.VISIBLE);
+                }
+
+            } else if (tipoTela == ListaUniversalActivity.TELA_ITEM_ORCAMENTO){
+
+                if ( (listaOrcamento != null) && (listaOrcamento.size() > 0)){
+                    // Atualiza o titulo da toolbar cabecalho
+                    ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(listaOrcamento.get(0).getSerieOrcamento().getCodigo() + " " + listaOrcamento.get(0).getNumeroOrcamento() +
+                            " - " + listaOrcamento.get(0).getNomeCliente());
+                }
+
+                if ( (listaItemOrcamento != null) && (listaItemOrcamento.size() > 0) ){
+                    listViewListagem.setAdapter(adapterListagem);
+
 
                 } else {
                     listViewListagem.setVisibility(View.GONE);
@@ -1462,13 +1636,18 @@ public class ListaUniversalFragment extends Fragment {
 
                         SuperToast.create(getContext(), getResources().getString(R.string.conferencia_inserido_sucesso), SuperToast.Duration.LONG, Style.getStyle(Style.GREEN, SuperToast.Animations.FLYIN)).show();
 
-
                         // Emite um som de positivo
                         MediaPlayer somSucesso = MediaPlayer.create(getContext(), R.raw.effect_alert_positive);
                         somSucesso.start();
                     }
                 });
-            }
+            } /*else {
+                SuperToast.create(getContext(), getResources().getString(R.string.erro_desconhecido), SuperToast.Duration.LONG, Style.getStyle(Style.RED, SuperToast.Animations.FLYIN)).show();
+
+                // Emite um som de positivo
+                MediaPlayer somSucesso = MediaPlayer.create(getContext(), R.raw.effect_alert_error);
+                somSucesso.start();
+            }*/
             return null;
         }
 

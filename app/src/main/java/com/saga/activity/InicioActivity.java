@@ -182,6 +182,13 @@ public class InicioActivity extends AppCompatActivity {
                                 startActivity(intentPedido);
                                 return true;
 
+                            case 4:
+                                // Abre a tela de romaneio
+                                Intent intentOrcamento = new Intent(InicioActivity.this, ListaUniversalActivity.class);
+                                intentOrcamento.putExtra(ListaUniversalActivity.KEY_TIPO_TELA, ListaUniversalActivity.TELA_ORCAMENTO);
+                                startActivity(intentOrcamento);
+                                return true;
+
                             case 5:
                                 // Abre a tela de notas fiscais de entradas
                                 Intent intent = new Intent(InicioActivity.this, ListaUniversalActivity.class);

@@ -10,6 +10,8 @@
     <string name="erro_sqlite_code_2067">Já existe no banco de dados.</string>
     <string name="erro_sqlite_code_1811">Abortamos a operação. Confira os detalhes da mensagem.</string>
     <string name="erro_sqlite_code_1299">Existe campos que são obrigatórios. Verifique quais.</string>
+    <string name="erro_valor_duplicado">Registro duplicado. Já existe os dados que você está tentando inserir.</string>
+    <string name="erro_nao_existe_aplicacao_webservice">Não existe a aplicação webservice no servidor.</string>
     <string name="nao_existe_tabela_banco_dados">Não existe está tabela no banco de dados.</string>
     <string name="vamos_executar_processo_criar_tabelas">Vamos executar o processo para tentar criar as tabelas que falta.</string>
     <string name="configuracoes_iniciais">Configurações Iniciais</string>
@@ -19,6 +21,7 @@
     <string name="pedido">Pedido</string>
     <string name="lista_pedidos">Lista de Pedidos</string>
     <string name="orcamento">Orçamento</string>
+    <string name="produtos_orcamento">Produtos de Orçamento</string>
     <string name="entrada">Entrada</string>
     <string name="separar">Separar</string>
     <string name="locacao_produto">Locação Por Produto</string>
@@ -112,6 +115,8 @@
     <string name="cancelado">Cancelado</string>
     <string name="nao_conseguimos_achar_codigo_produto">Não conseguimos achar código do produto</string>
     <string name="digite_algum_valor_valido_em_aguns_campos">Digite algum valor válido em alguns dos campos</string>
+    <string name="nenhum_filtro_foi_passado">Não foi passado nenhum </string>
+    <string name="erro_desconhecido">Erro desconhecido</string>
 
     <string-array name="tab_nota_fiscal_entrada">
         <item>Conferir Entradas</item>
@@ -141,5 +146,15 @@
     <string-array name="tab_item_pedido">
         <item>Produtos a Conferir</item>
         <item>Produtos Conferido</item>
+    </string-array>
+
+    <string-array name="tab_orcamento">
+        <item>Orçamento a Conferir</item>
+        <item>Orçamento Conferidos</item>
+    </string-array>
+
+    <string-array name="tab_item_orcamento">
+        <item>Produtos Orç. a Conferir</item>
+        <item>Produtos Orç. Conferido</item>
     </string-array>
 </resources>
